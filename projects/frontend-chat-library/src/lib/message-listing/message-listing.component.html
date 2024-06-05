@@ -8,19 +8,19 @@
         </mat-form-field>
     </div>    
 
-    <div *ngFor="let message of messages" class="rounded-lg overflow-hidden border border-gray-300 shadow-md mb-1">
+    <div *ngFor="let message of messagesList" class="rounded-lg overflow-hidden border border-gray-300 shadow-md mb-1">
         <div class="flex items-center p-4">
             <div class="w-12 h-12">
-                <img class="w-full h-full rounded-full object-cover" [src]="message.image" alt="User Image" />
+                <img class="w-full h-full rounded-full object-cover" [src]="message?.image" alt="User Image" />
             </div>
             <div class="ml-4 flex-1">
-                <div class="text-lg">{{ message.name }}</div>
-                <div class="text-gray-600">{{ message.lastMessage }}</div>
+                <div class="text-lg">{{ message?.name }}</div>
+                <div class="text-gray-600">{{ message?.lastMessage?.msg }}</div>
             </div>
             <div class="text-sm text-gray-500 relative">
-                <div class="mb-3">{{ message.time | date:'shortTime' }}</div>
-                <div class="absolute bottom-3 right-0 -mb-6">
-                    <div class="bg-blue-500 text-white rounded-full px-2">2</div>
+                <div class="mb-3">{{ message?.time | date:'shortTime' }}</div>
+                <div class="absolute bottom-3 right-0 -mb-6" *ngIf="message?.unread">
+                    <div class="bg-blue-500 text-white rounded-full px-2">{{message?.unread}}</div>
                 </div>
             </div>
         </div>
