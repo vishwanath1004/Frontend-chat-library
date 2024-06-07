@@ -30,15 +30,6 @@ export class RocketChatApiService {
       ws.send(JSON.stringify({ "msg": "method", "id": new Date().getTime().toString(), "method": "login", "params": [{ "resume": config.user.xAuthToken }] }))
       ws.send(JSON.stringify({ "msg": "sub", "id": new Date().getTime().toString(), "name": "meteor.loginServiceConfiguration", "params": [] }))
     };
-
-    ws.onmessage = (event: any) => {
-      if (JSON.parse(event.data).msg === 'ping') {
-        const pongMessage = {
-          msg: 'pong',
-        };
-        ws.send(JSON.stringify(pongMessage));
-      }
-    }
   }
 
   async getRoomList(ws: WebSocket): Promise<any> {
@@ -76,4 +67,50 @@ export class RocketChatApiService {
 
     return lastValueFrom(this.http.get(url, httpOptions));
   }
+
+  async subscribeToChannels(config: any, ws: any) {
+    ws.send(JSON.stringify({
+      "msg": "sub",
+      "id": '' + new Date().getTime(), // unique ID for subscription
+      "name": "stream-room-messages", // name of the subscription
+      "params": [{
+        "useCollection": false,
+        "args": []
+      }]
+    }));
+    ws.send(JSON.stringify(
+      {
+        "msg": "sub",
+        "id": '' + new Date().getTime(),
+        "name": "stream-notify-user",
+        "params": [config.user.userId + "/rooms-changed",
+        {
+          "useCollection": false,
+          "args": []
+        }]
+      }))
+    ws.send(JSON.stringify(
+      {
+        "msg": "sub",
+        "id": '' + new Date().getTime(),
+        "name": "stream-notify-all",
+        "params": ['public-settings-changed',
+          {
+            "useCollection": false,
+            "args": []
+          }]
+      }))
+    ws.send(JSON.stringify(
+      {
+        "msg": "sub",
+        "id": '' + new Date().getTime(),
+        "name": "stream-notify-all",
+        "params": [
+          {
+            "useCollection": false,
+            "args": []
+          }]
+      }))
+  }
+
 }
