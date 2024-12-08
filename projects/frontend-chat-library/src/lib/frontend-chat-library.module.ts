@@ -9,7 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { HttpClientModule } from '@angular/common/http';
-
+import { FrontendChatLibraryModuleRouting } from './frontend-chat-library-routing.module';
+import { RouterModule } from '@angular/router';
 @NgModule({
   declarations: [
     FrontendChatLibraryComponent,
@@ -23,7 +24,9 @@ import { HttpClientModule } from '@angular/common/http';
     MatIconModule,
     MatButtonModule,
     MatMenuModule,
-    HttpClientModule
+    HttpClientModule,
+    FrontendChatLibraryModuleRouting,
+    RouterModule
   ],
   exports: [
     FrontendChatLibraryComponent,

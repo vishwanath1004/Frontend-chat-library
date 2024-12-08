@@ -113,4 +113,25 @@ export class RocketChatApiService {
       }))
   }
 
+
+
+  loadHistory(config: any, ws: WebSocket): void {
+    if (!config || !ws) {
+      console.error('Configuration or WebSocket is missing.');
+      return;
+    }
+    const message = {
+      msg: 'method',
+      method: 'loadHistory',
+      id: Date.now().toString(),
+      params: [
+        config?.lastMessage?.rid,
+        {}, 
+        50, 
+        {},
+      ],
+    };
+    console.log(message,"message");
+    ws.send(JSON.stringify(message));
+  }
 }

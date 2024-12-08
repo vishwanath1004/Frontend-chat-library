@@ -49,9 +49,9 @@ export class AppComponent {
     rocketChatBaseUrl: 'https://chat-dev.elevate-apis.shikshalokam.org',
     websocketUrl: 'ws://chat-dev.elevate-apis.shikshalokam.org/websocket',
     user: {
-      xAuthToken: "lZiJS8ns7uC-HC0cax19cQBEhj7UHIgdL5rJB4Q6_Ay",
-      userId: "YwisTMuma3efTJwc7",
-      userName: "kiranharidas"
+      xAuthToken: "PXrIF-ZFkLFGX_mQSvXsC9oM7JRpfmHrZPHSdQaOovz",
+      userId: "38Wqd6E9jQT7y7Fzq",
+      userName: "Aanupama pujar roteinemiaaaaaavasdgbcsdue"
     }
   }
 

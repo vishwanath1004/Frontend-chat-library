@@ -1,24 +1,16 @@
 <div class="w-full h-full bg-white flex flex-col">
-    <!-- Header -->
     <div class="flex items-center p-1 border-b">
-
-        <!-- Back button -->
         <button class="mr-3 text-blue-500 text-6xl m-3">
             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#5f6368">
                 <path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z" />
             </svg>
         </button>
-
-        <!-- Profile image -->
         <img src="https://via.placeholder.com/50" alt="Profile Image" class="w-14 h-14 rounded-full mr-4">
-
         <div class="flex-1">
             <h2 class="text-lg font-semibold margin-bottom-0">John Doe</h2>
             <!-- <span class="text-sm text-green-500">Online</span> -->
             <!-- Use text-red-500 for offline -->
         </div>
-
-        <!-- Three dot menu -->
         <button mat-icon-button [matMenuTriggerFor]="menu" class="text-gray-600">
             <mat-icon>more_vert</mat-icon>
         </button>
@@ -27,11 +19,8 @@
             <button mat-menu-item>Delete</button>
         </mat-menu>
     </div>
-
-    <!-- Message Body -->
     <div class="flex-1 p-4 overflow-y-auto" id="message-body">
         <div class="space-y-4">
-            <!-- Example messages -->
             <div class="flex items-start">
                 <div>
                     <div class="bg-gray-200 rounded-lg p-3">
@@ -80,16 +69,12 @@
                     </div>
                 </div>
             </div>
-            <!-- Add more messages here -->
         </div>
     </div>
-
-    <!-- Input Field -->
     <div class="p-3 border-t flex items-center">
         <input type="text" placeholder="Type a message"
             class="flex-1 border rounded-full px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
         <button class="ml-4 bg-blue-500 text-white rounded-full p-3">
-            <!-- Send button (example using an SVG) -->
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path>
