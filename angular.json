@@ -139,6 +139,5 @@
         }
       }
     }
-  },
-  "defaultProject": "frontend-chat-app"
+  }
 }
