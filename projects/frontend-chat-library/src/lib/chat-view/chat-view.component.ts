@@ -1,4 +1,11 @@
-import { Component, OnInit, Input } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Input,
+  ChangeDetectorRef,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { RocketChatApiService } from '../services/rocket-chat-api/rocket-chat-api.service';
 import { urlConstants } from '../constants/urlConstants';
 import { FrontendChatLibraryService } from '../frontend-chat-library.service';
@@ -19,10 +26,12 @@ export class ChatViewComponent implements OnInit {
   messageText: string = '';
   roomDetails: any;
   friendDetails: any;
+  @ViewChild('messageBody', { static: false }) messageBody!: ElementRef;
   constructor(
     private rocketChatApi: RocketChatApiService,
     private chatService: FrontendChatLibraryService,
-    private routerParams: ActivatedRoute
+    private routerParams: ActivatedRoute,
+    private cdk: ChangeDetectorRef
   ) {}
 
   async ngOnInit() {
@@ -46,71 +55,56 @@ export class ChatViewComponent implements OnInit {
     await this.rocketChatApi.setHeadersAndWebsocket(this.config, this.ws);
     this.currentUser = await this.rocketChatApi.getCurrentUserDetails();
     this.roomDetails = await this.rocketChatApi.getRoomInfo(this.rid);
+    console.log(this.roomDetails, 'roomDetails');
     await this.rocketChatApi.subscribeToRoomChat(
       this.config,
       this.ws,
-      this.rid
+      this.rid,
+      this.roomDetails.room._id
     );
 
     let friendName = await this.roomDetails?.room?.usernames.find(
-      (name: any) => {
-        name !== this.currentUser.username;
-      }
+      (name: any) => name !== this.currentUser.username
     );
 
-    // await this.rocketChatApi.subscribeToRoomChat(
-    //   this.config,
-    //   this.ws,
-    //   this.rid
-    // );
-    // await this.rocketChatApi.getUserInfoByUsername();
-
-    console.log(this.roomDetails.room, 'roomInfo');
-    console.log(this.currentUser, 'user', friendName);
-    // this.ws.onopen = () => {
-    //   const loginMessage = {
-    //     msg: 'method',
-    //     method: 'login',
-    //     id: '' + new Date().getTime(),
-    //     params: [
-    //       {
-    //         resume: this.config.xAuthToken,
-    //       },
-    //     ],
-    //   };
-    //   this.ws.send(JSON.stringify(loginMessage));
-
-    // };
-
+    this.friendDetails = await this.rocketChatApi.getUserInfoByUsername(
+      friendName
+    );
     this.ws.onmessage = (event: MessageEvent) => {
       const data = JSON.parse(event.data);
-      console.log('WebSocket message received:', data);
-
       if (data.msg === 'ping') {
         const pongMessage = {
           msg: 'pong',
         };
         this.ws.send(JSON.stringify(pongMessage));
       }
-      console.log('WebSocket message received werwr:', data);
-
       if (
         data.msg === 'changed' &&
         data.collection === 'stream-room-messages'
       ) {
         const newMessage = data.fields.args[0];
         if (newMessage && newMessage.rid === this.rid) {
-          console.log(
-            this.currentUser._id,
-            'this.currentUser._id ====',
-            newMessage.u._id
-          );
           const formattedMessage = {
             author: this.currentUser._id === newMessage.u._id ? true : false,
             content: newMessage.msg,
-            ts: newMessage.ts.$date,
+            time: new Date(newMessage.ts.$date).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+            image: urlConstants.BASE_URL + '/avatar/' + newMessage.u.username,
           };
-          this.addNewMessage(formattedMessage);
+          const date = new Date(newMessage.ts.$date).toLocaleDateString();
+          const group = this.messages.find((m: any) => m.date === date);
+          if (group) {
+            group.messages.push(formattedMessage);
+          } else {
+            this.messages.push({
+              date,
+              messages: [formattedMessage],
+            });
+          }
+          this.messages = [...this.messages.reverse()];
+          this.cdk.detectChanges();
         }
       }
     };
@@ -148,8 +142,8 @@ export class ChatViewComponent implements OnInit {
       console.error('Messages is not an array');
       return;
     }
-    console.log(rawMessages.result.messages, 'rawMessages.result.messages');
     this.messages = this.groupMessagesByDate(rawMessages.result.messages);
+    this.messages = this.messages.reverse();
   }
 
   addNewMessage(message: any) {
@@ -158,7 +152,10 @@ export class ChatViewComponent implements OnInit {
     const formattedMessage = {
       author: this.currentUser._id === message.u._id ? true : false,
       content: message.content,
-      time: new Date(message.ts).toLocaleTimeString(),
+      time: new Date(message.ts).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
     };
 
     const group = this.messages.find((m: any) => m.date === date);
@@ -176,7 +173,7 @@ export class ChatViewComponent implements OnInit {
   }
 
   groupMessagesByDate(messages: any[]) {
-    const grouped = messages.reduce((acc, message) => {
+    const grouped: any = messages.reduce((acc, message) => {
       const date = new Date(message.ts.$date).toLocaleDateString();
       if (!acc[date]) {
         acc[date] = [];
@@ -185,7 +182,10 @@ export class ChatViewComponent implements OnInit {
         author: this.currentUser._id === message.u._id ? true : false,
         image: urlConstants.BASE_URL + '/avatar/' + message.u.username,
         content: message.msg,
-        time: new Date(message.ts.$date).toLocaleTimeString(),
+        time: new Date(message.ts.$date).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
       });
       return acc;
     }, {});
@@ -198,7 +198,7 @@ export class ChatViewComponent implements OnInit {
 
   async sendMessage() {
     if (!this.messageText.trim()) {
-      return; // Ignore empty messages
+      return;
     }
 
     const payload = {
@@ -214,8 +214,21 @@ export class ChatViewComponent implements OnInit {
     };
 
     this.ws?.send(JSON.stringify(payload));
-    console.log('Message sent:', this.messageText);
+    this.scrollToBottom();
+    this.messageText = '';
+  }
+  trackByDate(index: number, item: any): string {
+    return item.date;
+  }
 
-    this.messageText = ''; // Clear input field
+  scrollToBottom() {
+    if (this.messageBody) {
+      setTimeout(() => {
+        this.messageBody.nativeElement.scroll({
+          top: this.messageBody.nativeElement.scrollHeight,
+          behavior: 'smooth',
+        });
+      }, 0);
+    }
   }
 }

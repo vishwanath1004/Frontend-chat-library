@@ -104,20 +104,19 @@ export class RocketChatApiService {
     );
   }
 
-  async subscribeToRoomChat(config: any, ws: any, rid: any) {
-    console.log(config, 'config', ws, 'ws', rid, 'rid');
+  async subscribeToRoomChat(config: any, ws: any, rid: any, id: any) {
     ws.send(
       JSON.stringify({
         msg: 'sub',
-        id: '' + new Date().getTime(),
-        name: 'stream-livechat-room',
+        id: id,
+        name: 'stream-room-messages',
         params: [
           rid,
           {
             useCollection: false,
             args: [
               {
-                visitorToken: config.xAuthToken,
+                visitorToken: 'gGQMHdbEJ9WPqWwdftbdqsLmqsXhgoxqHq',
               },
             ],
           },

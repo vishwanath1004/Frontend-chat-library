@@ -24,7 +24,9 @@
     />
 
     <div class="flex-1">
-      <h2 class="text-lg font-semibold margin-bottom-0">Mentor Name</h2>
+      <h2 class="text-lg font-semibold margin-bottom-0">
+        {{ friendDetails?.user?.name }}
+      </h2>
     </div>
 
     <!-- Three dot menu -->
@@ -37,13 +39,19 @@
     </mat-menu>
   </div>
 
-  <div class="flex-1 p-4 overflow-y-auto" id="message-body">
+  <div class="flex-1 p-4 overflow-y-auto" id="message-body" #messageBody>
     <div class="space-y-4">
-      <div *ngFor="let group of messages" class="message-group">
+      <div
+        *ngFor="let group of messages.slice().reverse(); trackBy: trackByDate"
+        class="message-group"
+      >
         <h3 class="text-center text-gray-600 text-sm mb-4">
           <span class="date-bar"> {{ group.date }} </span>
         </h3>
-        <div *ngFor="let message of group.messages" class="mb-4">
+        <div
+          *ngFor="let message of group.messages.slice().reverse()"
+          class="mb-4"
+        >
           <div class="chat-card">
             <div
               class="d-flex flex-align-end"
