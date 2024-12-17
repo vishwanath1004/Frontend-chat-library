@@ -1,3 +1,38 @@
 .margin-bottom-0 {
     margin-bottom: 0px;
 }
+
+.chat-card{
+    padding: 0px;
+}
+
+.date-bar{
+    background-color: #af3f3866;
+    color: #000;
+    padding: 5px;
+    border-radius: 8px;
+}
+.chat-card-content{
+    background-color: #f1f1f1;
+    border-radius: 15px;
+    padding: 10px;
+    width: 80%;
+}
+.d-flex{
+    display: flex;
+}
+.flex-align-end{
+    align-items: end;
+}
+.chat-card-content span{
+    display: block; 
+    text-align: right; 
+    color: gray; 
+    font-size: 12px;
+}
+.chat-pic{
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin: 0px 8px;
+}

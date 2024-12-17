@@ -9,12 +9,19 @@ import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { HttpClientModule } from '@angular/common/http';
+import { FrontendChatLibraryModuleRouting } from './frontend-chat-library-routing.module';
+import { RouterModule } from '@angular/router';
+import { Demo2Component } from 'projects/frontend-chat-library/src/lib/demo2/demo2.component';
+import { DemoComponent } from 'projects/frontend-chat-library/src/lib/demo/demo.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
     FrontendChatLibraryComponent,
     MessageListingComponent,
-    ChatViewComponent
+    ChatViewComponent,
+    Demo2Component,
+    DemoComponent,
   ],
   imports: [
     CommonModule,
@@ -23,12 +30,18 @@ import { HttpClientModule } from '@angular/common/http';
     MatIconModule,
     MatButtonModule,
     MatMenuModule,
-    HttpClientModule
+    HttpClientModule,
+    FrontendChatLibraryModuleRouting,
+    RouterModule,
+    FormsModule,
   ],
   exports: [
     FrontendChatLibraryComponent,
     ChatViewComponent,
-    MessageListingComponent
-  ]
+    MessageListingComponent,
+    FrontendChatLibraryModuleRouting,
+    Demo2Component,
+    DemoComponent,
+  ],
 })
-export class FrontendChatLibraryModule { }
+export class FrontendChatLibraryModule {}

@@ -1,20 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
+import { FrontendChatLibraryService } from './frontend-chat-library.service';
 
 @Component({
   selector: 'lib-frontend-chat-library',
-  template: `
-    <p>
-      frontend-chat-library works!
-    </p>
-  `,
-  styles: [
-  ]
+  template: `<router-outlet> </router-outlet>`,
+  styles: [],
 })
 export class FrontendChatLibraryComponent implements OnInit {
-
-  constructor() { }
+  @Input() config: any;
+  constructor(private chatService: FrontendChatLibraryService) {}
 
   ngOnInit(): void {
+    this.chatService.setConfig(this.config);
   }
-
 }
