@@ -73,10 +73,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "frontend-chat-app:build:production"
+              "buildTarget": "frontend-chat-app:build:production"
             },
             "development": {
-              "browserTarget": "frontend-chat-app:build:development"
+              "buildTarget": "frontend-chat-app:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -84,7 +84,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "frontend-chat-app:build"
+            "buildTarget": "frontend-chat-app:build"
           }
         },
         "test": {
