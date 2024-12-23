@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
   // allUserMessages = [
@@ -46,14 +46,10 @@ export class AppComponent {
   // ];
 
   chatConfig = {
-    rocketChatBaseUrl: 'https://chat-dev.elevate-apis.shikshalokam.org',
-    websocketUrl: 'ws://chat-dev.elevate-apis.shikshalokam.org/websocket',
-    user: {
-      xAuthToken: "lZiJS8ns7uC-HC0cax19cQBEhj7UHIgdL5rJB4Q6_Ay",
-      userId: "YwisTMuma3efTJwc7",
-      userName: "kiranharidas"
-    }
-  }
+    xAuthToken: '7QsfZcxXUlYj_HwP0hYkGhM1rHByKwFSUG1yoj4st1b',
+    userId: 'gGQMHdbEJ9WPqWwdf',
+    userName: 'joffin',
+  };
 
   ngOninit() {}
 }

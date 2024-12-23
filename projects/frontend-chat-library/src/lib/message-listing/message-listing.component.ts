@@ -38,10 +38,6 @@ export class MessageListingComponent implements OnInit {
     console.log(this.currentUser, 'this.currentUser');
 
     this.messagesList = roomList.update.map((room: any) => {
-      console.log(room, 'room ********************88');
-      console.log(
-        room.usernames.find((str: any) => str !== this.currentUser.userName)
-      );
       return {
         ...room,
         name:
@@ -135,7 +131,7 @@ export class MessageListingComponent implements OnInit {
   navigate(message: any) {
     console.log('Navigating to chat with message:', message);
     this.router
-      .navigate(['/chat'], {
+      .navigate(['chat'], {
         queryParams: {
           rid: message.lastMessage.rid,
         },

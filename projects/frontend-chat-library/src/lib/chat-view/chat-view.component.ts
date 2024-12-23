@@ -36,16 +36,14 @@ export class ChatViewComponent implements OnInit {
 
   async ngOnInit() {
     this.routerParams.queryParams.subscribe((params: any) => {
+      console.log(params, 'params');
       this.rid = params.rid;
     });
-
     this.config = this.config || this.chatService.config;
-
     if (!this.rid) {
       console.error('Room ID (rid) is required');
       return;
     }
-
     await this.initializeWebSocket();
     this.loadChatHistory();
   }

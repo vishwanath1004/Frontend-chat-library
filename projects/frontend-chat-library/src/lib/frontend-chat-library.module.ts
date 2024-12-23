@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, NO_ERRORS_SCHEMA } from '@angular/core';
 import { FrontendChatLibraryComponent } from './frontend-chat-library.component';
 import { ChatViewComponent } from './chat-view/chat-view.component';
 import { MessageListingComponent } from './message-listing/message-listing.component';
@@ -10,18 +10,14 @@ import { CommonModule } from '@angular/common';
 import { MatMenuModule } from '@angular/material/menu';
 import { HttpClientModule } from '@angular/common/http';
 import { FrontendChatLibraryModuleRouting } from './frontend-chat-library-routing.module';
-import { RouterModule } from '@angular/router';
-import { Demo2Component } from 'projects/frontend-chat-library/src/lib/demo2/demo2.component';
-import { DemoComponent } from 'projects/frontend-chat-library/src/lib/demo/demo.component';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [
     FrontendChatLibraryComponent,
     MessageListingComponent,
     ChatViewComponent,
-    Demo2Component,
-    DemoComponent,
   ],
   imports: [
     CommonModule,
@@ -31,8 +27,8 @@ import { FormsModule } from '@angular/forms';
     MatButtonModule,
     MatMenuModule,
     HttpClientModule,
-    FrontendChatLibraryModuleRouting,
     RouterModule,
+    FrontendChatLibraryModuleRouting,
     FormsModule,
   ],
   exports: [
@@ -40,8 +36,11 @@ import { FormsModule } from '@angular/forms';
     ChatViewComponent,
     MessageListingComponent,
     FrontendChatLibraryModuleRouting,
-    Demo2Component,
-    DemoComponent,
   ],
+  schemas: [NO_ERRORS_SCHEMA],
 })
-export class FrontendChatLibraryModule {}
+export class FrontendChatLibraryModule {
+  constructor() {
+    console.log('FrontendChatLibraryModule ');
+  }
+}
