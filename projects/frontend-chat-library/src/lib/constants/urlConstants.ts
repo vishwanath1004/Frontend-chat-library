@@ -9,5 +9,6 @@ export const urlConstants = {
     LOAD_HISTORY: '/api/v1/method.call/loadHistory',
     SEND_MESSAGE: '/api/v1/method.call/sendMessage',
     ROOM_INFO: '/api/v1/rooms.info',
+    MARK_AS_READ: '/api/v1/subscriptions.read',
   },
 };

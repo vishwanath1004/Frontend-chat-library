@@ -1,7 +1,7 @@
 <div class="container mx-auto p-4">
   <div class="flex justify-center">
     <mat-form-field class="w-full" appearance="outline">
-      <button mat-icon-button matPrefix class="mr-2">
+      <button mat-icon-button matPrefix class="p-3 mr-2">
         <mat-icon class="font-20">search</mat-icon>
       </button>
       <input matInput class="px-4 py-2" placeholder="Search by name" />
@@ -25,11 +25,17 @@
         <div class="text-gray-600">{{ message?.lastMessage?.msg }}</div>
       </div>
       <div class="text-sm text-gray-500 relative">
-        <div class="mb-3" [ngStyle]="{ color: message?.unread ? 'red' : '' }">
+        <div
+          class="mb-3"
+          [ngStyle]="{ color: message?.unread ? config?.bgColor : '' }"
+        >
           {{ message?.time }}
         </div>
         <div class="absolute bottom-3 right-0 -mb-6" *ngIf="message?.unread">
-          <div class="bg-blue-500 text-white rounded-full px-2">
+          <div
+            class="bg-blue-500 text-white rounded-full px-2"
+            [ngStyle]="{ background: message?.unread ? config?.bgColor : '' }"
+          >
             {{ message?.unread }}
           </div>
         </div>

@@ -1,45 +1,26 @@
 <div class="w-full h-full bg-white flex flex-col">
-  <!-- Header -->
-  <div class="flex items-center p-1 border-b">
-    <!-- Back button -->
-    <button class="mr-3 text-blue-500 text-6xl m-3">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        height="24px"
-        viewBox="0 -960 960 960"
-        width="24px"
-        fill="#5f6368"
-      >
-        <path
-          d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"
-        />
-      </svg>
+  <mat-toolbar
+    class="flex p-3 items-center"
+    style="padding: 5px 15px"
+    [ngStyle]="{ background: config?.bgColor, color: config?.textColor }"
+  >
+    <button mat-icon-button class="mr-3" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
     </button>
-
-    <!-- Profile image -->
     <img
-      src="https://via.placeholder.com/50"
+      [src]="friendDetails?.profilePic"
       alt="Profile Image"
       class="w-14 h-14 rounded-full mr-4"
     />
+    <span class="flex-1 text-lg">{{ friendDetails?.user?.name }}</span>
+  </mat-toolbar>
 
-    <div class="flex-1">
-      <h2 class="text-lg font-semibold margin-bottom-0">
-        {{ friendDetails?.user?.name }}
-      </h2>
-    </div>
-
-    <!-- Three dot menu -->
-    <button mat-icon-button [matMenuTriggerFor]="menu" class="text-gray-600">
-      <mat-icon>more_vert</mat-icon>
-    </button>
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item>Block</button>
-      <button mat-menu-item>Delete</button>
-    </mat-menu>
-  </div>
-
-  <div class="flex-1 p-4 overflow-y-auto" id="message-body" #messageBody>
+  <div
+    class="flex-1 p-4 overflow-y-auto"
+    id="message-body"
+    #messageBody
+    (scroll)="onScroll($event)"
+  >
     <div class="space-y-4">
       <div
         *ngFor="let group of messages.slice().reverse(); trackBy: trackByDate"
@@ -48,10 +29,7 @@
         <h3 class="text-center text-gray-600 text-sm mb-4">
           <span class="date-bar"> {{ group.date }} </span>
         </h3>
-        <div
-          *ngFor="let message of group.messages.slice().reverse()"
-          class="mb-4"
-        >
+        <div *ngFor="let message of group.messages" class="mb-4">
           <div class="chat-card">
             <div
               class="d-flex flex-align-end"
@@ -89,8 +67,7 @@
     </div>
   </div>
 
-  <!-- Input Field -->
-  <div class="p-3 border-t flex items-center">
+  <div class="p-3 border-t flex items-center psfixed">
     <input
       type="text"
       [(ngModel)]="messageText"
@@ -98,24 +75,13 @@
       class="flex-1 border rounded-full px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
     />
     <button
+      [ngStyle]="{ background: config?.bgColor, color: config?.textColor }"
+      style="padding-bottom: 8px"
       class="ml-4 bg-blue-500 text-white rounded-full p-3"
       (click)="sendMessage()"
+      (keydown.enter)="sendMessage()"
     >
-      <!-- Send button -->
-      <svg
-        class="w-6 h-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M5 12h14M12 5l7 7-7 7"
-        ></path>
-      </svg>
+      <mat-icon> send</mat-icon>
     </button>
   </div>
 </div>

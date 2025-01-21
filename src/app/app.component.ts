@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -46,9 +45,8 @@ export class AppComponent {
   // ];
 
   chatConfig = {
-    xAuthToken: '7QsfZcxXUlYj_HwP0hYkGhM1rHByKwFSUG1yoj4st1b',
-    userId: 'gGQMHdbEJ9WPqWwdf',
-    userName: 'joffin',
+    xAuthToken: '',
+    userId: '',
   };
 
   ngOninit() {}

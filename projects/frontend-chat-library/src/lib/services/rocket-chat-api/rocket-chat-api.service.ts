@@ -180,4 +180,17 @@ export class RocketChatApiService {
       })
     );
   }
+
+  async marksAsRead(ws: WebSocket, payload: any): Promise<any> {
+    const httpOptions = {
+      headers: new HttpHeaders(this.headers),
+    };
+    return lastValueFrom(
+      this.http.post(
+        `${this.baseUrl}${payload?.url}`,
+        payload?.payload,
+        httpOptions
+      )
+    );
+  }
 }

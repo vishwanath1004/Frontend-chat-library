@@ -36,3 +36,12 @@
     border-radius: 50%;
     margin: 0px 8px;
 }
+.psfixed{
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: #fff;
+}
+#message-body{
+    margin-bottom: 100px;
+}

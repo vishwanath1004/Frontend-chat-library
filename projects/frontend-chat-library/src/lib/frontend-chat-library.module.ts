@@ -28,14 +28,12 @@ import { RouterModule } from '@angular/router';
     MatMenuModule,
     HttpClientModule,
     RouterModule,
-    FrontendChatLibraryModuleRouting,
     FormsModule,
   ],
   exports: [
     FrontendChatLibraryComponent,
     ChatViewComponent,
     MessageListingComponent,
-    FrontendChatLibraryModuleRouting,
   ],
   schemas: [NO_ERRORS_SCHEMA],
 })

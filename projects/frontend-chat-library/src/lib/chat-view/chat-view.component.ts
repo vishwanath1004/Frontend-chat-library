@@ -5,11 +5,12 @@ import {
   ChangeDetectorRef,
   ElementRef,
   ViewChild,
+  Output,
+  EventEmitter,
 } from '@angular/core';
 import { RocketChatApiService } from '../services/rocket-chat-api/rocket-chat-api.service';
 import { urlConstants } from '../constants/urlConstants';
 import { FrontendChatLibraryService } from '../frontend-chat-library.service';
-import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'lib-chat-view',
@@ -19,29 +20,29 @@ import { ActivatedRoute } from '@angular/router';
 export class ChatViewComponent implements OnInit {
   history: any;
   @Input() config: any;
+  @Input() rid: any;
+  @Output() backEvent = new EventEmitter();
+
   currentUser: any;
   ws: any;
-  rid: string | undefined;
   messages: any = [];
   messageText: string = '';
   roomDetails: any;
   friendDetails: any;
   @ViewChild('messageBody', { static: false }) messageBody!: ElementRef;
+  private lastTimestamp: Date | null = null;
+  private isLoadingHistory = false;
+  private allMessagesLoaded = false;
   constructor(
     private rocketChatApi: RocketChatApiService,
     private chatService: FrontendChatLibraryService,
-    private routerParams: ActivatedRoute,
     private cdk: ChangeDetectorRef
   ) {}
 
+  ionviewWillEnter() {}
   async ngOnInit() {
-    this.routerParams.queryParams.subscribe((params: any) => {
-      console.log(params, 'params');
-      this.rid = params.rid;
-    });
     this.config = this.config || this.chatService.config;
     if (!this.rid) {
-      console.error('Room ID (rid) is required');
       return;
     }
     await this.initializeWebSocket();
@@ -53,7 +54,6 @@ export class ChatViewComponent implements OnInit {
     await this.rocketChatApi.setHeadersAndWebsocket(this.config, this.ws);
     this.currentUser = await this.rocketChatApi.getCurrentUserDetails();
     this.roomDetails = await this.rocketChatApi.getRoomInfo(this.rid);
-    console.log(this.roomDetails, 'roomDetails');
     await this.rocketChatApi.subscribeToRoomChat(
       this.config,
       this.ws,
@@ -68,6 +68,8 @@ export class ChatViewComponent implements OnInit {
     this.friendDetails = await this.rocketChatApi.getUserInfoByUsername(
       friendName
     );
+    this.friendDetails.profilePic =
+      urlConstants.BASE_URL + '/avatar/' + this.friendDetails.user.username;
     this.ws.onmessage = (event: MessageEvent) => {
       const data = JSON.parse(event.data);
       if (data.msg === 'ping') {
@@ -82,6 +84,7 @@ export class ChatViewComponent implements OnInit {
       ) {
         const newMessage = data.fields.args[0];
         if (newMessage && newMessage.rid === this.rid) {
+          this.messages = [...this.messages.reverse()];
           const formattedMessage = {
             author: this.currentUser._id === newMessage.u._id ? true : false,
             content: newMessage.msg,
@@ -112,40 +115,69 @@ export class ChatViewComponent implements OnInit {
     };
 
     this.ws.onclose = () => {
-      console.log('WebSocket connection closed');
-      setTimeout(() => this.initializeWebSocket(), 5000); // Reconnect after 5 seconds
+      setTimeout(() => this.initializeWebSocket(), 5000);
     };
   }
 
   async loadChatHistory() {
-    this.history = await this.rocketChatApi.getChatHistory(this.ws, {
-      url: urlConstants.API_URLS.LOAD_HISTORY,
-      payload: {
-        message: JSON.stringify({
-          msg: 'method',
-          method: 'loadHistory',
-          id: '' + new Date().getTime(),
-          params: [this.rid, null, 60, null],
-        }),
-      },
-    });
-
-    if (!this.history) {
-      console.error('Failed to load chat history');
+    if (this.isLoadingHistory || this.allMessagesLoaded) {
       return;
     }
 
-    const rawMessages: any = JSON.parse(this.history.message);
-    if (!Array.isArray(rawMessages.result.messages)) {
-      console.error('Messages is not an array');
-      return;
+    this.isLoadingHistory = true;
+
+    try {
+      const response = await this.rocketChatApi.getChatHistory(this.ws, {
+        url: urlConstants.API_URLS.LOAD_HISTORY,
+        payload: {
+          message: JSON.stringify({
+            msg: 'method',
+            method: 'loadHistory',
+            id: '' + new Date().getTime(),
+            params: [this.rid, this.lastTimestamp, 60, null],
+          }),
+        },
+      });
+
+      if (!response) {
+        console.error('Failed to load chat history');
+        this.isLoadingHistory = false;
+        return;
+      }
+
+      const rawMessages: any = JSON.parse(response.message);
+      if (!Array.isArray(rawMessages.result.messages)) {
+        console.error('Messages is not an array');
+        this.isLoadingHistory = false;
+        return;
+      }
+
+      const newMessages = rawMessages.result.messages;
+
+      if (newMessages.length === 0) {
+        this.allMessagesLoaded = true;
+      } else {
+        this.lastTimestamp = new Date(
+          newMessages[newMessages.length - 1].ts.$date
+        );
+        const groupedMessages = this.groupMessagesByDate(newMessages);
+
+        this.messages = [...groupedMessages, ...this.messages];
+      }
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    } finally {
+      this.isLoadingHistory = false;
     }
-    this.messages = this.groupMessagesByDate(rawMessages.result.messages);
-    this.messages = this.messages.reverse();
+  }
+
+  onScroll(event: any) {
+    if (event.target.scrollTop === 0 && !this.isLoadingHistory) {
+      this.loadChatHistory();
+    }
   }
 
   addNewMessage(message: any) {
-    console.log(message, 'message message');
     const date = new Date(message.ts).toLocaleDateString();
     const formattedMessage = {
       author: this.currentUser._id === message.u._id ? true : false,
@@ -166,7 +198,6 @@ export class ChatViewComponent implements OnInit {
       });
     }
 
-    // Force Angular change detection
     this.messages = [...this.messages];
   }
 
@@ -228,5 +259,9 @@ export class ChatViewComponent implements OnInit {
         });
       }, 0);
     }
+  }
+
+  goBack() {
+    this.backEvent.emit();
   }
 }
