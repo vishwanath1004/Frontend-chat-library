@@ -28,3 +28,7 @@
   .font-20 {
     font-size: 28px;
   }
+.search-btn{
+  margin-left: 2px;
+  background: transparent;
+}

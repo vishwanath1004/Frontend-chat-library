@@ -37,13 +37,15 @@ export class MessageListingComponent implements OnInit {
     const unreadMap = new Map(
       subscribedRooms.update.map((item: any) => [item.rid, item.unread])
     );
+
+    const fnameMap = new Map(
+      subscribedRooms.update.map((item: any) => [item.rid, item.fname])
+    );
+
     this.messagesList = roomList.update.map((room: any) => {
       return {
         ...room,
-        name:
-          room.usernames?.find(
-            (str: any) => str !== this.currentUser.username
-          ) ?? room.name,
+        name: fnameMap.get(room._id) ?? room.name,
         image: room.usernames
           ? `${urlConstants.BASE_URL}/avatar/${room.usernames.find(
               (str: any) => str !== this.currentUser.username
@@ -65,7 +67,6 @@ export class MessageListingComponent implements OnInit {
         : new Date(0).getTime();
       return dateA - dateB;
     });
-
     let msgList = await this.rocketChatApi.subscribeToChannels(
       this.config,
       this.ws
@@ -108,10 +109,7 @@ export class MessageListingComponent implements OnInit {
               );
 
               this.messagesList.unshift(incomingMsgData);
-              (incomingMsgData.name =
-                incomingMsgData.usernames?.find(
-                  (str: any) => str !== this.currentUser.username
-                ) ?? incomingMsgData.name),
+              (incomingMsgData.name = fnameMap.get(incomingMsgData._id) ?? incomingMsgData.name), // Use 'fname' if available, otherwise use 'name'
                 (incomingMsgData.image = incomingMsgData.usernames
                   ? `${
                       urlConstants.BASE_URL

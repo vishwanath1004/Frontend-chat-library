@@ -45,3 +45,7 @@
 #message-body{
     margin-bottom: 100px;
 }
+.back-btn{
+    background: transparent;
+    color: #fff;
+}

@@ -22,6 +22,7 @@ export class ChatViewComponent implements OnInit {
   @Input() config: any;
   @Input() rid: any;
   @Output() backEvent = new EventEmitter();
+  @Output() profileEvent= new EventEmitter();
 
   currentUser: any;
   ws: any;
@@ -263,5 +264,9 @@ export class ChatViewComponent implements OnInit {
 
   goBack() {
     this.backEvent.emit();
+  }
+
+  profile(){
+    this.profileEvent.emit();
   }
 }

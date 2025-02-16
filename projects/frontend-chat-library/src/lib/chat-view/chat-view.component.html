@@ -4,15 +4,15 @@
     style="padding: 5px 15px"
     [ngStyle]="{ background: config?.bgColor, color: config?.textColor }"
   >
-    <button mat-icon-button class="mr-3" (click)="goBack()">
+    <button mat-icon-button class="mr-3" (click)="goBack()"  class="back-btn">
       <mat-icon>arrow_back</mat-icon>
     </button>
-    <img
+    <img  (click)="profile()"
       [src]="friendDetails?.profilePic"
       alt="Profile Image"
       class="w-14 h-14 rounded-full mr-4"
     />
-    <span class="flex-1 text-lg">{{ friendDetails?.user?.name }}</span>
+    <span class="flex-1 text-lg"  (click)="profile()">{{ friendDetails?.user?.name }}</span>
   </mat-toolbar>
 
   <div
@@ -79,7 +79,7 @@
       style="padding-bottom: 8px"
       class="ml-4 bg-blue-500 text-white rounded-full p-3"
       (click)="sendMessage()"
-      (keydown.enter)="sendMessage()"
+      (keyup.enter)="sendMessage()"
     >
       <mat-icon> send</mat-icon>
     </button>
