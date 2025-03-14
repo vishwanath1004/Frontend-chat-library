@@ -1,29 +1,18 @@
-<div class="w-full h-full bg-white flex flex-col">
-  <mat-toolbar
-    class="flex p-3 items-center"
-    style="padding: 5px 15px"
-    [ngStyle]="{ background: config?.bgColor, color: config?.textColor }"
-  >
-    <button mat-icon-button class="mr-3" (click)="goBack()"  class="back-btn">
+<div class="w-full h-full bg-white flex flex-col" >
+  <mat-toolbar class="flex p-3 items-center" style="padding: 5px 15px"
+    [ngStyle]="{ background: config?.bgColor, color: config?.textColor }">
+    <button mat-icon-button class="mr-3" (click)="goBack()" class="back-btn">
       <mat-icon>arrow_back</mat-icon>
     </button>
-    <img  (click)="profile()"
-      [src]="friendDetails?.profilePic"
-      alt="Profile Image"
-      class="w-14 h-14 rounded-full mr-4"
-    />
-    <span class="flex-1 text-lg"  (click)="profile()">{{ friendDetails?.user?.name }}</span>
+    <img (click)="profile()" [src]="friendDetails?.profilePic" alt="Profile Image"
+      class="w-14 h-14 rounded-full mr-4" />
+    <span class="flex-1 text-lg" (click)="profile()">{{ friendDetails?.user?.name }}</span>
   </mat-toolbar>
 
-  <div
-    class="flex-1 p-4 overflow-y-auto"
-    id="message-body"
-    #messageBody
-    (scroll)="onScroll($event)"
-  >
+  <div class="flex-1 p-4 overflow-y-auto" id="message-body" #messageBody >
     <div class="space-y-4">
       <div
-        *ngFor="let group of messages.slice().reverse(); trackBy: trackByDate"
+        *ngFor="let group of messages.slice(); trackBy: trackByDate"
         class="message-group"
       >
         <h3 class="text-center text-gray-600 text-sm mb-4">
@@ -68,19 +57,10 @@
   </div>
 
   <div class="p-3 border-t flex items-center psfixed">
-    <input
-      type="text"
-      [(ngModel)]="messageText"
-      placeholder="Type a message"
-      class="flex-1 border rounded-full px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-    <button
-      [ngStyle]="{ background: config?.bgColor, color: config?.textColor }"
-      style="padding-bottom: 8px"
-      class="ml-4 bg-blue-500 text-white rounded-full p-3"
-      (click)="sendMessage()"
-      (keyup.enter)="sendMessage()"
-    >
+    <input type="text" [(ngModel)]="messageText" placeholder="Type a message"
+      class="flex-1 border rounded-full px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+    <button [ngStyle]="{ background: config?.bgColor, color: config?.textColor }" style="padding-bottom: 8px"
+      class="ml-4 bg-blue-500 text-white rounded-full p-3" (click)="sendMessage()" (keyup.enter)="sendMessage()">
       <mat-icon> send</mat-icon>
     </button>
   </div>

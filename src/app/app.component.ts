@@ -1,10 +1,16 @@
 import { Component } from '@angular/core';
+import { FrontendChatLibraryService } from 'projects/frontend-chat-library/src/public-api';
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
+  
+  constructor(private fls: FrontendChatLibraryService) {
+
+  }
   // allUserMessages = [
   //   {
   //     image: 'https://via.placeholder.com/150',
@@ -45,9 +51,13 @@ export class AppComponent {
   // ];
 
   chatConfig = {
-    xAuthToken: '',
-    userId: '',
-  };
+    "xAuthToken": "hRl9I58TI-VNfbnjNGfRBbRMzu6ECpIYosNJFSQP1vV",
+    "userId": "rEY8H5eGEWDYR3zw9",
+    "textColor": "#fff",
+    "bgColor": "#832215"
+};
 
-  ngOninit() {}
+  ngOninit() {
+    this.fls.setConfig(this.chatConfig)
+  }
 }

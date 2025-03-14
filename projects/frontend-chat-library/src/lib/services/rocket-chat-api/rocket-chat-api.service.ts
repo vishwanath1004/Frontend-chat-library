@@ -15,8 +15,8 @@ export class RocketChatApiService {
   async setHeadersAndWebsocket(config: any, ws: any) {
     this.baseUrl = urlConstants.BASE_URL;
     this.headers = {
-      'X-Auth-Token': config.xAuthToken,
-      'X-User-Id': config.userId,
+      'X-Auth-Token': 'hRl9I58TI-VNfbnjNGfRBbRMzu6ECpIYosNJFSQP1vV',
+      'X-User-Id': 'rEY8H5eGEWDYR3zw9',
       // You can add more headers if needed
     };
     console.log(ws, 'ws');
@@ -32,7 +32,7 @@ export class RocketChatApiService {
           msg: 'method',
           id: new Date().getTime().toString(),
           method: 'login',
-          params: [{ resume: config.xAuthToken }],
+          params: [{ resume: 'hRl9I58TI-VNfbnjNGfRBbRMzu6ECpIYosNJFSQP1vV' }],
         })
       );
       ws.send(
@@ -64,7 +64,7 @@ export class RocketChatApiService {
     return lastValueFrom(this.http.get(url, httpOptions));
   }
 
-  async getRoomInfo(roomId: any) {
+  async getRoomInfo(roomId: any="prCSR9pdMDjAXpDqTrEY8H5eGEWDYR") {
     const url = `${this.baseUrl}${urlConstants.API_URLS.ROOM_INFO}?roomId=${roomId}`;
     const httpOptions = {
       headers: new HttpHeaders(this.headers),
@@ -144,7 +144,7 @@ export class RocketChatApiService {
         id: '' + new Date().getTime(),
         name: 'stream-notify-user',
         params: [
-          config.userId + '/rooms-changed',
+          '38Wqd6E9jQT7y7Fzq' + '/rooms-changed',
           {
             useCollection: false,
             args: [],
