@@ -1,3 +1,8 @@
-<!-- <lib-chat-view></lib-chat-view> -->
-<lib-message-listing [config]="chatConfig"> </lib-message-listing>
+<!-- <div *ngIf="chatConfig">
+<lib-chat-view [config]="chatConfig" rid="prCSR9pdMDjAXpDqTrEY8H5eGEWDYR3zw9"></lib-chat-view>
+
+</div> -->
+ <div *ngIf="chatConfig">
+    <lib-message-listing [config]="chatConfig"> </lib-message-listing>
+ </div>
 <!-- <lib-frontend-chat-library [config]="chatConfig"></lib-frontend-chat-library> -->

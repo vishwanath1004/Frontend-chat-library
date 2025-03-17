@@ -22,7 +22,7 @@ export class ChatViewComponent implements OnInit {
   @Input() config: any;
   @Input() rid: any;
   @Output() backEvent = new EventEmitter();
-  @Output() profileEvent= new EventEmitter();
+  @Output() profileEvent = new EventEmitter();
 
   currentUser: any;
   ws: any;
@@ -92,6 +92,7 @@ export class ChatViewComponent implements OnInit {
             time: new Date(newMessage.ts.$date).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
+              hour12: true
             }),
             image: urlConstants.BASE_URL + '/avatar/' + newMessage.u.username,
           };
@@ -162,8 +163,8 @@ export class ChatViewComponent implements OnInit {
           newMessages[newMessages.length - 1].ts.$date
         );
         const groupedMessages = this.groupMessagesByDate(newMessages);
-
-        this.messages = [...groupedMessages, ...this.messages];
+        this.messages = groupedMessages;
+        this.scrollToBottom();
       }
     } catch (error) {
       console.error('Error loading chat history:', error);
@@ -202,7 +203,8 @@ export class ChatViewComponent implements OnInit {
     this.messages = [...this.messages];
   }
 
-  groupMessagesByDate(messages: any[]) {
+  groupMessagesByDate(allMessages: any[]) {
+    const messages = [...allMessages].reverse();
     const grouped: any = messages.reduce((acc, message) => {
       const date = new Date(message.ts.$date).toLocaleDateString();
       if (!acc[date]) {
@@ -215,6 +217,7 @@ export class ChatViewComponent implements OnInit {
         time: new Date(message.ts.$date).toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit',
+          hour12: true,
         }),
       });
       return acc;
@@ -252,12 +255,16 @@ export class ChatViewComponent implements OnInit {
   }
 
   scrollToBottom() {
+    debugger
     if (this.messageBody) {
+      debugger
       setTimeout(() => {
-        this.messageBody.nativeElement.scroll({
-          top: this.messageBody.nativeElement.scrollHeight,
-          behavior: 'smooth',
-        });
+        debugger
+        // this.messageBody.nativeElement.scrollToBottom({
+        //   // top: this.messageBody.nativeElement.scrollHeight,
+        //   behavior: 'smooth',
+        // });
+        debugger
       }, 0);
     }
   }
@@ -266,7 +273,7 @@ export class ChatViewComponent implements OnInit {
     this.backEvent.emit();
   }
 
-  profile(){
+  profile() {
     this.profileEvent.emit();
   }
 }
