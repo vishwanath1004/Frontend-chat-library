@@ -92,3 +92,8 @@
     background-position: 200% 0;
   }
 }
+
+.messageContainer{
+    height: 80vh; 
+    overflow-y: auto;
+}

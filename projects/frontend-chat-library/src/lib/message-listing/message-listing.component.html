@@ -56,10 +56,9 @@
   </ng-container>
 
   <ng-template #skeletonList>
-    <div class="mb-4" *ngFor="let i of [0, 4]">
+    <div class="mb-4" *ngFor="let i of [].constructor(6); let index = index">
       <div class="chat-card">
         <div class="d-flex flex-align-end">
-          <div class="chat-pic skeleton-circle"></div>
           <div class="chat-card-content skeleton-box"></div>
         </div>
       </div>

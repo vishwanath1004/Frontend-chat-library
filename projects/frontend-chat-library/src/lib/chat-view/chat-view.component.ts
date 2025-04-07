@@ -7,6 +7,7 @@ import {
   ViewChild,
   Output,
   EventEmitter,
+  AfterViewInit
 } from '@angular/core';
 import { RocketChatApiService } from '../services/rocket-chat-api/rocket-chat-api.service';
 import { urlConstants } from '../constants/urlConstants';
@@ -17,7 +18,8 @@ import { FrontendChatLibraryService } from '../frontend-chat-library.service';
   templateUrl: './chat-view.component.html',
   styleUrls: ['./chat-view.component.css'],
 })
-export class ChatViewComponent implements OnInit {
+export class ChatViewComponent implements OnInit, AfterViewInit {
+  @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
   history: any;
   @Input() config: any;
   @Input() rid: any;
@@ -30,17 +32,20 @@ export class ChatViewComponent implements OnInit {
   messageText: string = '';
   roomDetails: any;
   friendDetails: any;
-  @ViewChild('messageBody', { static: false }) messageBody!: ElementRef;
   private lastTimestamp: Date | null = null;
   private isLoadingHistory = false;
   private allMessagesLoaded = false;
   isLoading: boolean = true;
+  private shouldScrollToBottom = false;
   constructor(
     private rocketChatApi: RocketChatApiService,
     private chatService: FrontendChatLibraryService,
     private cdk: ChangeDetectorRef
   ) {}
 
+  ngAfterViewInit() {
+   this.scrollToBottom();
+  }
   ionviewWillEnter() {}
   async ngOnInit() {
     this.config = this.config || this.chatService.config;
@@ -111,7 +116,7 @@ export class ChatViewComponent implements OnInit {
             });
           }
           this.cdk.detectChanges();
-          this.scrollToBottom(); // Scroll to the bottom after receiving a new message
+          this.scrollToBottom();
         }
       }
     };
@@ -167,8 +172,8 @@ export class ChatViewComponent implements OnInit {
           newMessages[newMessages.length - 1].ts.$date
         );
         const groupedMessages = this.groupMessagesByDate(newMessages);
-        this.messages = [...this.messages, ...groupedMessages]; // Append new messages at the bottom
-        this.scrollToBottom(); // Ensure the view scrolls to the bottom
+        this.messages = [...this.messages, ...groupedMessages];
+        this.scrollToBottom();
       }
     } catch (error) {
       console.error('Error loading chat history:', error);
@@ -252,18 +257,20 @@ export class ChatViewComponent implements OnInit {
 
     this.ws?.send(JSON.stringify(payload));
     this.messageText = '';
-    this.scrollToBottom(); // Scroll to the bottom after sending a message
+    this.scrollToBottom();
   }
   trackByDate(index: number, item: any): string {
     return item.date;
   }
 
-  scrollToBottom() {
-    if (this.messageBody) {
-      requestAnimationFrame(() => {
-        this.messageBody.nativeElement.scrollTop = this.messageBody.nativeElement.scrollHeight;
-      });
-    }
+  scrollToBottom(): void {  
+      setTimeout(() => {  
+        this.scrollContainer.nativeElement.scrollTo({
+          top: this.scrollContainer.nativeElement.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+      , 100);
   }
 
   goBack() {
