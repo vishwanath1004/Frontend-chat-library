@@ -1,66 +1,95 @@
 <div class="w-full h-full bg-white flex flex-col" >
-  <mat-toolbar class="flex p-3 items-center" style="padding: 5px 15px"
+  <mat-toolbar class="flex p-3 items-center" style="padding: 5px 15px; position: fixed;
+    width: 100%;"
     [ngStyle]="{ background: config?.bgColor, color: config?.textColor }">
     <button mat-icon-button class="mr-3" (click)="goBack()" class="back-btn">
       <mat-icon>arrow_back</mat-icon>
     </button>
-    <img (click)="profile()" [src]="friendDetails?.profilePic" alt="Profile Image"
+    <img (click)="profile()"  *ngIf="friendDetails?.profilePic" [src]="friendDetails?.profilePic" alt="Profile Image"
       class="w-14 h-14 rounded-full mr-4" />
+    <img *ngIf="!friendDetails && !friendDetails?.profilePic" [src]="'https://static.thenounproject.com/png/5034901-200.png'" alt="Profile Image"
+    class="w-14 h-14 rounded-full mr-4" />
     <span class="flex-1 text-lg" (click)="profile()">{{ friendDetails?.user?.name }}</span>
   </mat-toolbar>
 
   <div class="flex-1 p-4 overflow-y-auto" id="message-body" #messageBody >
     <div class="space-y-4">
-      <div
-        *ngFor="let group of messages.slice(); trackBy: trackByDate"
-        class="message-group"
-      >
-        <h3 class="text-center text-gray-600 text-sm mb-4">
-          <span class="date-bar"> {{ group.date }} </span>
-        </h3>
-        <div *ngFor="let message of group.messages" class="mb-4">
-          <div class="chat-card">
-            <div
-              class="d-flex flex-align-end"
-              [ngStyle]="{
-                'justify-content': message?.author ? 'end' : 'start'
-              }"
-            >
-              <img
-                *ngIf="message?.author"
-                [src]="message.image"
-                alt="Profile Picture"
-                class="chat-pic"
-              />
-              <div
-                class="chat-card-content"
-                [ngStyle]="{
-                  background: message?.author ? '#68686866' : '#f1f1f1'
-                }"
-              >
-                {{ message?.content }}
-                <span>
-                  {{ message.time }}
-                </span>
+      <div *ngIf="isLoading">
+          <div class="mb-4" *ngFor="let i of [0, 1]">
+            <div class="chat-card">
+              <div class="d-flex flex-align-end">
+                <div class="chat-pic skeleton-circle"></div>
+                <div class="chat-card-content skeleton-box"></div>
               </div>
-              <img
-                *ngIf="!message?.author"
-                [src]="message.image"
-                alt="Profile Picture"
-                class="chat-pic"
-              />
+            </div>
+            <div class="chat-card">
+              <div class="d-flex flex-align-start">
+                <div class="chat-card-content skeleton-box"></div>
+                <div class="chat-pic skeleton-circle"></div>
+              </div>
+            </div>
+            <div class="chat-card">
+              <div class="d-flex flex-align-end">
+                <div class="chat-pic skeleton-circle"></div>
+                <div class="chat-card-content skeleton-box"></div>
+              </div>
             </div>
           </div>
+      </div>
+
+     <div  *ngIf="!isLoading">
+      <div
+      *ngFor="let group of messages.slice(); trackBy: trackByDate"
+      class="message-group"
+    >
+      <h3 class="text-center text-gray-600 text-sm mb-4">
+        <span class="date-bar"> {{ group.date }} </span>
+      </h3>
+      <div *ngFor="let message of group.messages" class="mb-4">
+        <div class="chat-card">
+          <div
+            class="d-flex flex-align-end"
+            [ngStyle]="{
+              'justify-content': message?.author ? 'end' : 'start'
+            }"
+          >
+            <img
+              *ngIf="message?.author"
+              [src]="message?.image"
+              alt="Profile Picture"
+              class="chat-pic"
+            />
+            <div
+              class="chat-card-content"
+              [ngStyle]="{
+                background: message?.author ? '#68686866' : '#f1f1f1'
+              }"
+            >
+              {{ message?.content }}
+              <span>
+                {{ message.time }}
+              </span>
+            </div>
+            <img
+              *ngIf="!message?.author"
+              [src]="message.image"
+              alt="Profile Picture"
+              class="chat-pic"
+            />
+          </div>
         </div>
+      </div>
+    </div>
       </div>
     </div>
   </div>
 
   <div class="p-3 border-t flex items-center psfixed">
     <input type="text" [(ngModel)]="messageText" placeholder="Type a message"
-      class="flex-1 border rounded-full px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      class="flex-1 border rounded-full px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      (keyup.enter)="sendMessage()" />
     <button [ngStyle]="{ background: config?.bgColor, color: config?.textColor }" style="padding-bottom: 8px"
-      class="ml-4 bg-blue-500 text-white rounded-full p-3" (click)="sendMessage()" (keyup.enter)="sendMessage()">
+      class="ml-4 bg-blue-500 text-white rounded-full p-3" (click)="sendMessage()">
       <mat-icon> send</mat-icon>
     </button>
   </div>

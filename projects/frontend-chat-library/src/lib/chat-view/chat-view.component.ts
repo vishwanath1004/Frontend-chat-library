@@ -34,6 +34,7 @@ export class ChatViewComponent implements OnInit {
   private lastTimestamp: Date | null = null;
   private isLoadingHistory = false;
   private allMessagesLoaded = false;
+  isLoading: boolean = true;
   constructor(
     private rocketChatApi: RocketChatApiService,
     private chatService: FrontendChatLibraryService,
@@ -47,10 +48,13 @@ export class ChatViewComponent implements OnInit {
       return;
     }
     await this.initializeWebSocket();
-    this.loadChatHistory();
+    await this.loadChatHistory();
+    this.isLoading = false;
+    this.scrollToBottom();
   }
 
   async initializeWebSocket() {
+    this.isLoading = true; 
     this.ws = new WebSocket(urlConstants.websocketUrl);
     await this.rocketChatApi.setHeadersAndWebsocket(this.config, this.ws);
     this.currentUser = await this.rocketChatApi.getCurrentUserDetails();
@@ -71,6 +75,7 @@ export class ChatViewComponent implements OnInit {
     );
     this.friendDetails.profilePic =
       urlConstants.BASE_URL + '/avatar/' + this.friendDetails.user.username;
+    this.isLoading = false;
     this.ws.onmessage = (event: MessageEvent) => {
       const data = JSON.parse(event.data);
       if (data.msg === 'ping') {
@@ -85,7 +90,6 @@ export class ChatViewComponent implements OnInit {
       ) {
         const newMessage = data.fields.args[0];
         if (newMessage && newMessage.rid === this.rid) {
-          this.messages = [...this.messages.reverse()];
           const formattedMessage = {
             author: this.currentUser._id === newMessage.u._id ? true : false,
             content: newMessage.msg,
@@ -106,8 +110,8 @@ export class ChatViewComponent implements OnInit {
               messages: [formattedMessage],
             });
           }
-          this.messages = [...this.messages.reverse()];
           this.cdk.detectChanges();
+          this.scrollToBottom(); // Scroll to the bottom after receiving a new message
         }
       }
     };
@@ -163,8 +167,8 @@ export class ChatViewComponent implements OnInit {
           newMessages[newMessages.length - 1].ts.$date
         );
         const groupedMessages = this.groupMessagesByDate(newMessages);
-        this.messages = groupedMessages;
-        this.scrollToBottom();
+        this.messages = [...this.messages, ...groupedMessages]; // Append new messages at the bottom
+        this.scrollToBottom(); // Ensure the view scrolls to the bottom
       }
     } catch (error) {
       console.error('Error loading chat history:', error);
@@ -247,25 +251,18 @@ export class ChatViewComponent implements OnInit {
     };
 
     this.ws?.send(JSON.stringify(payload));
-    this.scrollToBottom();
     this.messageText = '';
+    this.scrollToBottom(); // Scroll to the bottom after sending a message
   }
   trackByDate(index: number, item: any): string {
     return item.date;
   }
 
   scrollToBottom() {
-    debugger
     if (this.messageBody) {
-      debugger
-      setTimeout(() => {
-        debugger
-        // this.messageBody.nativeElement.scrollToBottom({
-        //   // top: this.messageBody.nativeElement.scrollHeight,
-        //   behavior: 'smooth',
-        // });
-        debugger
-      }, 0);
+      requestAnimationFrame(() => {
+        this.messageBody.nativeElement.scrollTop = this.messageBody.nativeElement.scrollHeight;
+      });
     }
   }
 

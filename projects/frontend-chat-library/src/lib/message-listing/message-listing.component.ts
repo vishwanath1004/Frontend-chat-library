@@ -17,6 +17,9 @@ export class MessageListingComponent implements OnInit {
   currentUser: any;
   ws: any;
   rid: any;
+  searchTerm: string = ''; 
+  filteredMessagesList: any[] = [];
+  loading: boolean = true;
 
   constructor(
     private rocketChatApi: RocketChatApiService,
@@ -25,6 +28,7 @@ export class MessageListingComponent implements OnInit {
   ) {}
 
   async ngOnInit() {
+    this.loading = true;
     this.config = this.chatService.config;
     this.ws = new WebSocket(urlConstants.websocketUrl);
     await this.rocketChatApi.setHeadersAndWebsocket(this.config, this.ws);
@@ -67,6 +71,8 @@ export class MessageListingComponent implements OnInit {
         : new Date(0).getTime();
       return dateA - dateB;
     });
+    this.filteredMessagesList = this.messagesList;
+    this.loading = false;
     let msgList = await this.rocketChatApi.subscribeToChannels(
       this.config,
       this.ws
@@ -137,6 +143,12 @@ export class MessageListingComponent implements OnInit {
         }
       }
     };
+  }
+
+  filterMessages() {
+    this.filteredMessagesList = this.messagesList.filter((message: any) =>
+      message.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+    );
   }
 
   navigate(message: any) {

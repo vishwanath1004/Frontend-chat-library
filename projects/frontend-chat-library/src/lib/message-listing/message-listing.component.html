@@ -4,42 +4,65 @@
       <button mat-icon-button matPrefix class="p-3 mr-2 search-btn">
         <mat-icon class="font-20">search</mat-icon>
       </button>
-      <input matInput class="px-4 py-2" placeholder="Search by name" />
+      <input
+        matInput
+        class="px-4 py-2"
+        placeholder="Search by name"
+        [(ngModel)]="searchTerm"
+        (input)="filterMessages()"
+      />
     </mat-form-field>
   </div>
 
-  <div
-    *ngFor="let message of messagesList"
-    class="rounded-lg overflow-hidden border border-gray-300 shadow-md mb-1"
-  >
-    <div class="flex items-center p-4" (click)="navigate(message)">
-      <div class="w-12 h-12">
-        <img
-          class="w-full h-full rounded-full object-cover"
-          [src]="message?.image"
-          alt="User Image"
-        />
-      </div>
-      <div class="ml-4 flex-1">
-        <div class="text-lg">{{ message?.name }}</div>
-        <div class="text-gray-600">{{ message?.lastMessage?.msg }}</div>
-      </div>
-      <div class="text-sm text-gray-500 relative">
-        <div
-          class="mb-3"
-          [ngStyle]="{ color: message?.unread ? config?.bgColor : '' }"
-        >
-          {{ message?.time }}
+  <ng-container *ngIf="!loading; else skeletonList">
+    <div
+      *ngFor="let message of filteredMessagesList"
+      class="rounded-lg overflow-hidden border border-gray-300 shadow-md mb-1"
+    >
+      <div class="flex items-center p-4" (click)="navigate(message)">
+        <div class="w-12 h-12">
+          <img
+            class="w-full h-full rounded-full object-cover"
+            [src]="message?.image"
+            alt="User Image"
+          />
         </div>
-        <div class="absolute bottom-3 right-0 -mb-6" *ngIf="message?.unread">
+        <div class="ml-4 flex-1">
+          <div class="text-lg">{{ message?.name }}</div>
+          <div class="text-gray-600">{{ message?.lastMessage?.msg }}</div>
+        </div>
+        <div class="text-sm text-gray-500 relative">
           <div
-            class="bg-blue-500 text-white rounded-full px-2"
-            [ngStyle]="{ background: message?.unread ? config?.bgColor : '' }"
+            class="mb-3"
+            [ngStyle]="{ color: message?.unread ? config?.bgColor : '' }"
           >
-            {{ message?.unread }}
+            {{ message?.time }}
+          </div>
+          <div class="absolute bottom-3 right-0 -mb-6" *ngIf="message?.unread">
+            <div
+              class="bg-blue-500 text-white rounded-full px-2"
+              [ngStyle]="{ background: message?.unread ? config?.bgColor : '' }"
+            >
+              {{ message?.unread }}
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+
+    <div *ngIf="searchTerm && filteredMessagesList.length === 0" class="text-center">
+      <p class="text-gray-500">No messages found.</p>
+    </div>
+  </ng-container>
+
+  <ng-template #skeletonList>
+    <div class="mb-4" *ngFor="let i of [0, 4]">
+      <div class="chat-card">
+        <div class="d-flex flex-align-end">
+          <div class="chat-pic skeleton-circle"></div>
+          <div class="chat-card-content skeleton-box"></div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
 </div>
