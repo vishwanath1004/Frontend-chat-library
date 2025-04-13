@@ -125,16 +125,13 @@ this.startDate = new Date(this.endDate);
         }
       }
     };
-
     this.ws.onerror = (error: any) => {
       console.error('WebSocket error:', error);
     };
-
     this.ws.onclose = () => {
       setTimeout(() => this.initializeWebSocket(), 5000);
     };
   }
-
   async loadChatHistory(): Promise<void> {
     if (this.isLoadingHistory || this.allMessagesLoaded) return;
     this.isLoadingHistory = true;
@@ -161,14 +158,14 @@ this.startDate = new Date(this.endDate);
         this.allMessagesLoaded = true;
         return;
       }
-  
-      // Update timestamp for next load
       this.lastTimestamp = newMessages[newMessages.length - 1].ts.$date;
-  
       const filtered = newMessages.filter((msg: any) => {
         const msgDate = new Date(msg.ts.$date);
-        if (msgDate < this.startDate) {
-          this.startDate = msgDate; 
+        if (!this.startDate || msgDate < this.startDate) {
+          this.startDate = msgDate;
+        }
+        if (!this.endDate || msgDate > this.endDate) {
+          this.endDate = msgDate;
         }
         return msgDate >= this.startDate && msgDate <= this.endDate;
       });
@@ -271,7 +268,7 @@ this.startDate = new Date(this.endDate);
   }
 
   profile() {
-    this.profileEvent.emit(this.currentUser?._id);
+    this.profileEvent.emit(this.friendDetails?.user?._id);
   }
 
   trackByDate(index: number, item: any): string {
