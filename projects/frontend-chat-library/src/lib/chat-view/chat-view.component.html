@@ -37,7 +37,7 @@
           </div>
       </div>
 
-     <div  *ngIf="!isLoading" #scrollContainer class="messageContainer">
+     <div *ngIf="!isLoading"  #scrollContainer (scroll)="onScroll($event)" class="messageContainer">
       <div
       *ngFor="let group of messages.slice(); trackBy: trackByDate"
       class="message-group"
@@ -65,17 +65,17 @@
                 background: message?.author ? '#68686866' : '#f1f1f1'
               }"
             >
-              {{ message?.content }}
+             <span style="text-align: left; color:#000">  {{ message?.content }}</span>
               <span>
                 {{ message.time }}
               </span>
             </div>
-            <img
+            <!-- <img
               *ngIf="message?.author"
               [src]="message.image"
               alt="Profile Picture"
               class="chat-pic"
-            />
+            /> -->
           </div>
         </div>
       </div>

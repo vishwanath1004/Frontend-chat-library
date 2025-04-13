@@ -20,7 +20,6 @@ import { FrontendChatLibraryService } from '../frontend-chat-library.service';
 })
 export class ChatViewComponent implements OnInit, AfterViewInit {
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
-  history: any;
   @Input() config: any;
   @Input() rid: any;
   @Output() backEvent = new EventEmitter();
@@ -32,11 +31,16 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   messageText: string = '';
   roomDetails: any;
   friendDetails: any;
-  private lastTimestamp: Date | null = null;
+  private lastTimestamp: any = null;
   private isLoadingHistory = false;
   private allMessagesLoaded = false;
+  private isFirstLoad = true;
   isLoading: boolean = true;
-  private shouldScrollToBottom = false;
+
+  private pageSizeInDays = 7;
+private startDate!: Date;
+private endDate!: Date;
+
   constructor(
     private rocketChatApi: RocketChatApiService,
     private chatService: FrontendChatLibraryService,
@@ -44,22 +48,26 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngAfterViewInit() {
-   this.scrollToBottom();
+    this.scrollToBottom();
+    this.endDate = new Date();
+this.startDate = new Date(this.endDate);
+// this.startDate.setDate(this.endDate.getDate() - this.pageSizeInDays + 1);
   }
-  ionviewWillEnter() {}
+
   async ngOnInit() {
     this.config = this.config || this.chatService.config;
-    if (!this.rid) {
-      return;
-    }
+    if (!this.rid) return;
+
     await this.initializeWebSocket();
     await this.loadChatHistory();
+
     this.isLoading = false;
     this.scrollToBottom();
   }
 
   async initializeWebSocket() {
-    this.isLoading = true; 
+    this.isLoading = true;
+
     this.ws = new WebSocket(urlConstants.websocketUrl);
     await this.rocketChatApi.setHeadersAndWebsocket(this.config, this.ws);
     this.currentUser = await this.rocketChatApi.getCurrentUserDetails();
@@ -71,50 +79,47 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
       this.roomDetails.room._id
     );
 
-    let friendName = await this.roomDetails?.room?.usernames.find(
+    let friendName = this.roomDetails?.room?.usernames.find(
       (name: any) => name !== this.currentUser.username
     );
 
-    this.friendDetails = await this.rocketChatApi.getUserInfoByUsername(
-      friendName
-    );
+    this.friendDetails = await this.rocketChatApi.getUserInfoByUsername(friendName);
     this.friendDetails.profilePic =
       urlConstants.BASE_URL + '/avatar/' + this.friendDetails.user.username;
+
     this.isLoading = false;
+
     this.ws.onmessage = (event: MessageEvent) => {
       const data = JSON.parse(event.data);
+
       if (data.msg === 'ping') {
-        const pongMessage = {
-          msg: 'pong',
-        };
-        this.ws.send(JSON.stringify(pongMessage));
+        this.ws.send(JSON.stringify({ msg: 'pong' }));
       }
-      if (
-        data.msg === 'changed' &&
-        data.collection === 'stream-room-messages'
-      ) {
+
+      if (data.msg === 'changed' && data.collection === 'stream-room-messages') {
         const newMessage = data.fields.args[0];
+
         if (newMessage && newMessage.rid === this.rid) {
           const formattedMessage = {
-            author: this.currentUser._id === newMessage.u._id ? true : false,
+            author: this.currentUser._id === newMessage.u._id,
             content: newMessage.msg,
             time: new Date(newMessage.ts.$date).toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
-              hour12: true
+              hour12: true,
             }),
             image: urlConstants.BASE_URL + '/avatar/' + newMessage.u.username,
           };
+
           const date = new Date(newMessage.ts.$date).toLocaleDateString();
           const group = this.messages.find((m: any) => m.date === date);
+
           if (group) {
             group.messages.push(formattedMessage);
           } else {
-            this.messages.push({
-              date,
-              messages: [formattedMessage],
-            });
+            this.messages.push({ date, messages: [formattedMessage] });
           }
+
           this.cdk.detectChanges();
           this.scrollToBottom();
         }
@@ -130,13 +135,9 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
     };
   }
 
-  async loadChatHistory() {
-    if (this.isLoadingHistory || this.allMessagesLoaded) {
-      return;
-    }
-
+  async loadChatHistory(): Promise<void> {
+    if (this.isLoadingHistory || this.allMessagesLoaded) return;
     this.isLoadingHistory = true;
-
     try {
       const response = await this.rocketChatApi.getChatHistory(this.ws, {
         url: urlConstants.API_URLS.LOAD_HISTORY,
@@ -144,44 +145,50 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
           message: JSON.stringify({
             msg: 'method',
             method: 'loadHistory',
-            id: '' + new Date().getTime(),
-            params: [this.rid, this.lastTimestamp, 60, null],
-          }),
-        },
+            id: Date.now().toString(),
+            params: [
+              this.rid,
+              this.lastTimestamp ? { $date: this.lastTimestamp } : null,
+              50,
+              { $date: Date.now() }
+            ]
+          })
+        }
       });
-
-      if (!response) {
-        console.error('Failed to load chat history');
-        this.isLoadingHistory = false;
-        return;
-      }
-
       const rawMessages: any = JSON.parse(response.message);
-      if (!Array.isArray(rawMessages.result.messages)) {
-        console.error('Messages is not an array');
-        this.isLoadingHistory = false;
-        return;
-      }
-
-      const newMessages = rawMessages.result.messages;
-
+      const newMessages = rawMessages?.result?.messages || [];
       if (newMessages.length === 0) {
         this.allMessagesLoaded = true;
-      } else {
-        this.lastTimestamp = new Date(
-          newMessages[newMessages.length - 1].ts.$date
-        );
-        const groupedMessages = this.groupMessagesByDate(newMessages);
-        this.messages = [...this.messages, ...groupedMessages];
-        this.scrollToBottom();
+        return;
       }
+  
+      // Update timestamp for next load
+      this.lastTimestamp = newMessages[newMessages.length - 1].ts.$date;
+  
+      const filtered = newMessages.filter((msg: any) => {
+        const msgDate = new Date(msg.ts.$date);
+        if (msgDate < this.startDate) {
+          this.startDate = msgDate; 
+        }
+        return msgDate >= this.startDate && msgDate <= this.endDate;
+      });
+  
+      if (filtered.length === 0) {
+        this.allMessagesLoaded = true;
+        return;
+      }
+      const groupedMessages = this.groupMessagesByDate(filtered);
+      this.messages = [...groupedMessages,...this.messages];
+      this.endDate = new Date(this.startDate);
+      this.startDate = new Date(this.endDate);
+      this.startDate.setDate(this.endDate.getDate() - this.pageSizeInDays);
+    this.isLoadingHistory = false;
     } catch (error) {
-      console.error('Error loading chat history:', error);
     } finally {
       this.isLoadingHistory = false;
     }
   }
-
+  
   onScroll(event: any) {
     if (event.target.scrollTop === 0 && !this.isLoadingHistory) {
       this.loadChatHistory();
@@ -191,7 +198,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   addNewMessage(message: any) {
     const date = new Date(message.ts).toLocaleDateString();
     const formattedMessage = {
-      author: this.currentUser._id === message.u._id ? true : false,
+      author: this.currentUser._id === message.u._id,
       content: message.content,
       time: new Date(message.ts).toLocaleTimeString([], {
         hour: '2-digit',
@@ -203,10 +210,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
     if (group) {
       group.messages.push(formattedMessage);
     } else {
-      this.messages.push({
-        date,
-        messages: [formattedMessage],
-      });
+      this.messages.push({ date, messages: [formattedMessage] });
     }
 
     this.messages = [...this.messages];
@@ -216,11 +220,10 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
     const messages = [...allMessages].reverse();
     const grouped: any = messages.reduce((acc, message) => {
       const date = new Date(message.ts.$date).toLocaleDateString();
-      if (!acc[date]) {
-        acc[date] = [];
-      }
+      if (!acc[date]) acc[date] = [];
+
       acc[date].push({
-        author: this.currentUser._id === message.u._id ? true : false,
+        author: this.currentUser._id === message.u._id,
         image: urlConstants.BASE_URL + '/avatar/' + message.u.username,
         content: message.msg,
         time: new Date(message.ts.$date).toLocaleTimeString([], {
@@ -229,6 +232,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
           hour12: true,
         }),
       });
+
       return acc;
     }, {});
 
@@ -239,38 +243,27 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   }
 
   async sendMessage() {
-    if (!this.messageText.trim()) {
-      return;
-    }
+    if (!this.messageText.trim()) return;
 
     const payload = {
       msg: 'method',
       method: 'sendMessage',
-      id: '' + new Date().getTime(),
-      params: [
-        {
-          rid: this.rid,
-          msg: this.messageText,
-        },
-      ],
+      id: '' + Date.now(),
+      params: [{ rid: this.rid, msg: this.messageText }],
     };
 
     this.ws?.send(JSON.stringify(payload));
     this.messageText = '';
     this.scrollToBottom();
   }
-  trackByDate(index: number, item: any): string {
-    return item.date;
-  }
 
-  scrollToBottom(): void {  
-      setTimeout(() => {  
-        this.scrollContainer.nativeElement.scrollTo({
-          top: this.scrollContainer.nativeElement.scrollHeight,
-          behavior: 'smooth'
-        });
-      }
-      , 100);
+  scrollToBottom(): void {
+    setTimeout(() => {
+      this.scrollContainer?.nativeElement.scrollTo({
+        top: this.scrollContainer?.nativeElement.scrollHeight,
+        behavior: 'smooth',
+      });
+    }, 100);
   }
 
   goBack() {
@@ -278,6 +271,10 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   }
 
   profile() {
-    this.profileEvent.emit();
+    this.profileEvent.emit(this.currentUser?._id);
+  }
+
+  trackByDate(index: number, item: any): string {
+    return item.date;
   }
 }

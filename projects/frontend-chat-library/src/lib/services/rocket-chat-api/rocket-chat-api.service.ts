@@ -19,7 +19,6 @@ export class RocketChatApiService {
       'X-User-Id': config.userId,
       // You can add more headers if needed
     };
-    console.log(ws, 'ws');
     ws.onopen = (event: any) => {
       const connectionMessage = {
         msg: 'connect',
