@@ -7,7 +7,7 @@
     </button>
     <img (click)="profile()"  *ngIf="friendDetails?.profilePic" [src]="friendDetails?.profilePic" alt="Profile Image"
       class="w-14 h-14 rounded-full mr-4" />
-    <img *ngIf="!friendDetails && !friendDetails?.profilePic" [src]="'https://static.thenounproject.com/png/5034901-200.png'" alt="Profile Image"
+    <img *ngIf="!friendDetails && !friendDetails?.profilePic" [src]="'assets/prof-img/user.png'" alt="Profile Image"
     class="w-14 h-14 rounded-full mr-4" />
     <span class="flex-1 text-lg" (click)="profile()">{{ friendDetails?.user?.name }}</span>
   </mat-toolbar>
