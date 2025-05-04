@@ -13,7 +13,7 @@ export class RocketChatApiService {
   constructor(private http: HttpClient) {}
 
   async setHeadersAndWebsocket(config: any, ws: any) {
-    this.baseUrl = urlConstants.BASE_URL;
+    this.baseUrl = config.chatBaseUrl;
     this.headers = {
     'X-Auth-Token': config.xAuthToken,
       'X-User-Id': config.userId,
@@ -191,5 +191,55 @@ export class RocketChatApiService {
         httpOptions
       )
     );
+  }
+
+
+  async getTextLimit(): Promise<number | null> {
+    const httpOptions = {
+      headers: new HttpHeaders(this.headers),
+    };
+    const methodId = '12';
+  
+    const payload = {
+      message: JSON.stringify({
+        msg: 'method',
+        id: methodId,
+        method: 'public-settings/get',
+        params: [{ $date: 0 }],
+      }),
+    };
+    try {
+      const response: any = await lastValueFrom(
+        this.http.post(`${this.baseUrl}${urlConstants.API_URLS.MESSAGE_LIMIT}`, payload, httpOptions)
+      );
+      const parsedMessage = JSON.parse(response.message);
+      const settings = parsedMessage?.result?.update;
+      const messageLimitSetting = settings?.find((s: any) => s._id === 'Message_MaxAllowedSize');
+      return messageLimitSetting?.value ?? null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+
+  async resolveImageUrl(username: string): Promise<string> {
+    const imageUrl = `${this.baseUrl}/avatar/${username}`;
+    const defaultImage = 'assets/prof-img/user.png';
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    try {
+      const response = await fetch(imageUrl, {
+        method: 'GET',
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      const contentType = response.headers.get('Content-Type') || response.headers.get('content-type');
+      if (contentType?.includes('image/svg+xml')) {
+        return defaultImage;
+      }
+      return imageUrl;
+    } catch (error) {
+      return defaultImage;
+    }
   }
 }

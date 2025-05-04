@@ -30,74 +30,74 @@ export class MessageListingComponent implements OnInit {
   async ngOnInit() {
     this.loading = true;
     this.config = this.chatService.config;
-    this.ws = new WebSocket(urlConstants.websocketUrl);
+    this.ws = new WebSocket(this.config.chatWebSocketUrl);
     await this.rocketChatApi.setHeadersAndWebsocket(this.config, this.ws);
     this.currentUser = await this.rocketChatApi.getCurrentUserDetails();
     let roomList = await this.rocketChatApi.getRoomList(this.ws);
-    let subscribedRooms = await this.rocketChatApi.getSubscribedRoomList(
-      this.ws
-    );
-
+    let subscribedRooms = await this.rocketChatApi.getSubscribedRoomList(this.ws);
+  
     const unreadMap = new Map(
       subscribedRooms.update.map((item: any) => [item.rid, item.unread])
     );
-
     const fnameMap = new Map(
       subscribedRooms.update.map((item: any) => [item.rid, item.fname])
     );
-
-    this.messagesList = roomList.update.map((room: any) => {
-      return {
-        ...room,
-        name: fnameMap.get(room._id) ?? room.name,
-        image: room.usernames
-          ? `${urlConstants.BASE_URL}/avatar/${room.usernames.find(
-              (str: any) => str !== this.currentUser.username
-            )}`
-          : `${urlConstants.BASE_URL}/avatar/default`,
-        unread: unreadMap.get(room._id),
-        time: new Date(room.ts).toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-        }),
-      };
-    });
+  
+    this.messagesList = await Promise.all(
+      roomList.update.map(async (room: any) => {
+        const otherUsername = room.usernames?.find(
+          (str: any) => str !== this.currentUser.username
+        ) ?? 'default';
+  
+        const image = await this.rocketChatApi.resolveImageUrl(otherUsername);
+  
+        return {
+          ...room,
+          name: fnameMap.get(room._id) ?? room.name,
+          image,
+          unread: unreadMap.get(room._id),
+          time: new Date(room.ts).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+        };
+      })
+    );
+  
     this.messagesList.sort((a: any, b: any) => {
-      const dateA = a.lastMessage
-        ? new Date(a.lastMessage.ts).getTime()
-        : new Date(0).getTime();
-      const dateB = b.lastMessage
-        ? new Date(b.lastMessage.ts).getTime()
-        : new Date(0).getTime();
+      const dateA = a.lastMessage ? new Date(a.lastMessage.ts).getTime() : 0;
+      const dateB = b.lastMessage ? new Date(b.lastMessage.ts).getTime() : 0;
       return dateA - dateB;
     });
+  
     this.filteredMessagesList = this.messagesList;
     this.loading = false;
-    let msgList = await this.rocketChatApi.subscribeToChannels(
-      this.config,
-      this.ws
-    );
+  
+    let msgList = await this.rocketChatApi.subscribeToChannels(this.config, this.ws);
+  
     this.ws.onmessage = async (event: any) => {
       let data = JSON.parse(event.data);
       if (data.msg === 'ping') {
-        const pongMessage = {
-          msg: 'pong',
-        };
+        const pongMessage = { msg: 'pong' };
         this.ws.send(JSON.stringify(pongMessage));
       }
+  
       if (data.msg === 'changed' && data.fields) {
         const eventName = data.fields.eventName;
         const args = data.fields.args;
+  
         if (eventName.includes('rooms-changed') && args[0] === 'updated') {
           const incomingMsgData = args[1];
+  
           if (incomingMsgData.lastMessage) {
             const result = this.messagesList.find(
               (obj: any) => obj._id === incomingMsgData.lastMessage.rid
             );
             if (result) {
-              result.lastMessage = incomingMsgData?.lastMessage;
-              result.unread = result.unread + 1;
+              result.lastMessage = incomingMsgData.lastMessage;
+              result.unread += 1;
             }
+  
             const objIndex = this.messagesList.findIndex(
               (obj: any) => obj._id === incomingMsgData.lastMessage.rid
             );
@@ -105,33 +105,22 @@ export class MessageListingComponent implements OnInit {
               const [obj] = this.messagesList.splice(objIndex, 1);
               this.messagesList.push(obj);
             } else {
-              let subscribedRooms =
-                await this.rocketChatApi.getSubscribedRoomList(this.ws);
+              let subscribedRooms = await this.rocketChatApi.getSubscribedRoomList(this.ws);
               const unreadMap = new Map(
-                subscribedRooms.update.map((item: any) => [
-                  item.rid,
-                  item.unread,
-                ])
+                subscribedRooms.update.map((item: any) => [item.rid, item.unread])
               );
-
+              const otherUsername = incomingMsgData.usernames?.find(
+                (str: any) => str !== this.currentUser.username
+              ) ?? 'default';
+              const image = await this.rocketChatApi.resolveImageUrl(otherUsername);
+              incomingMsgData.name = fnameMap.get(incomingMsgData._id) ?? incomingMsgData.name;
+              incomingMsgData.image = image;
+              incomingMsgData.unread = unreadMap.get(incomingMsgData._id);
               this.messagesList.unshift(incomingMsgData);
-              (incomingMsgData.name = fnameMap.get(incomingMsgData._id) ?? incomingMsgData.name), // Use 'fname' if available, otherwise use 'name'
-                (incomingMsgData.image = incomingMsgData.usernames
-                  ? `${
-                      urlConstants.BASE_URL
-                    }/avatar/${incomingMsgData.usernames.find(
-                      (str: any) => str !== this.currentUser.username
-                    )}`
-                  : `${urlConstants.BASE_URL}/avatar/default`),
-                (incomingMsgData.unread = unreadMap.get(incomingMsgData._id));
             }
             this.messagesList.sort((a: any, b: any) => {
-              const dateA = a.lastMessage
-                ? new Date(a.lastMessage.ts).getTime()
-                : new Date(0).getTime();
-              const dateB = b.lastMessage
-                ? new Date(b.lastMessage.ts).getTime()
-                : new Date(0).getTime();
+              const dateA = a.lastMessage ? new Date(a.lastMessage.ts).getTime() : 0;
+              const dateB = b.lastMessage ? new Date(b.lastMessage.ts).getTime() : 0;
               return dateA - dateB;
             });
             const hasUnreadMessages = this.messagesList.some(
@@ -144,6 +133,7 @@ export class MessageListingComponent implements OnInit {
       }
     };
   }
+  
 
   filterMessages() {
     this.filteredMessagesList = this.messagesList.filter((message: any) =>
