@@ -136,6 +136,7 @@ export class MessageListingComponent implements OnInit {
   
 
   filterMessages() {
+    if(this.searchTerm?.length<3) return;
     this.filteredMessagesList = this.messagesList.filter((message: any) =>
       message.name.toLowerCase().includes(this.searchTerm.toLowerCase())
     );
