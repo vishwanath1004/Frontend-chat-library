@@ -13,7 +13,6 @@ import { RocketChatApiService } from '../services/rocket-chat-api/rocket-chat-ap
 import { urlConstants } from '../constants/urlConstants';
 import { FrontendChatLibraryService } from '../frontend-chat-library.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-
 @Component({
   selector: 'lib-chat-view',
   templateUrl: './chat-view.component.html',
@@ -25,6 +24,8 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   @Input() rid: any;
   @Output() backEvent = new EventEmitter();
   @Output() profileEvent = new EventEmitter();
+  @Output() limitExceededEvent = new EventEmitter();
+
   textLimit = 250;
   currentUser: any;
   ws: any;
@@ -37,7 +38,6 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   private allMessagesLoaded = false;
   private isFirstLoad = true;
   isLoading: boolean = true;
-
   private pageSizeInDays = 7;
   private startDate!: Date;
   private endDate!: Date;
@@ -226,6 +226,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   async sendMessage() {
     if (!this.messageText.trim()) return;
       if(this.messageText.length > this.textLimit) {
+        this.limitExceededEvent.emit(this.textLimit);
         return;
       }
     const payload = {

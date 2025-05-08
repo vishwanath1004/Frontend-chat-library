@@ -32,7 +32,9 @@ export class MessageListingComponent implements OnInit {
     this.config = this.chatService.config;
     this.ws = new WebSocket(this.config.chatWebSocketUrl);
     await this.rocketChatApi.setHeadersAndWebsocket(this.config, this.ws);
+  
     this.currentUser = await this.rocketChatApi.getCurrentUserDetails();
+  
     let roomList = await this.rocketChatApi.getRoomList(this.ws);
     let subscribedRooms = await this.rocketChatApi.getSubscribedRoomList(this.ws);
   
@@ -64,24 +66,23 @@ export class MessageListingComponent implements OnInit {
       })
     );
   
+    // Sort initially by recent messages
     this.messagesList.sort((a: any, b: any) => {
       const dateA = a.lastMessage ? new Date(a.lastMessage.ts).getTime() : 0;
       const dateB = b.lastMessage ? new Date(b.lastMessage.ts).getTime() : 0;
-      return dateA - dateB;
+      return dateB - dateA;
     });
   
     this.filteredMessagesList = this.messagesList;
     this.loading = false;
-  
     let msgList = await this.rocketChatApi.subscribeToChannels(this.config, this.ws);
-  
     this.ws.onmessage = async (event: any) => {
       let data = JSON.parse(event.data);
+  
       if (data.msg === 'ping') {
         const pongMessage = { msg: 'pong' };
         this.ws.send(JSON.stringify(pongMessage));
       }
-  
       if (data.msg === 'changed' && data.fields) {
         const eventName = data.fields.eventName;
         const args = data.fields.args;
@@ -90,29 +91,29 @@ export class MessageListingComponent implements OnInit {
           const incomingMsgData = args[1];
   
           if (incomingMsgData.lastMessage) {
-            const result = this.messagesList.find(
+            const roomIndex = this.messagesList.findIndex(
               (obj: any) => obj._id === incomingMsgData.lastMessage.rid
             );
-            if (result) {
-              result.lastMessage = incomingMsgData.lastMessage;
-              result.unread += 1;
-            }
   
-            const objIndex = this.messagesList.findIndex(
-              (obj: any) => obj._id === incomingMsgData.lastMessage.rid
-            );
-            if (objIndex !== -1) {
-              const [obj] = this.messagesList.splice(objIndex, 1);
-              this.messagesList.push(obj);
+            if (roomIndex !== -1) {
+              const room = this.messagesList[roomIndex];
+              room.lastMessage = incomingMsgData.lastMessage;
+              room.unread += 1;
+  
+              const [updatedRoom] = this.messagesList.splice(roomIndex, 1);
+              this.messagesList.unshift(updatedRoom);
             } else {
               let subscribedRooms = await this.rocketChatApi.getSubscribedRoomList(this.ws);
               const unreadMap = new Map(
                 subscribedRooms.update.map((item: any) => [item.rid, item.unread])
               );
+  
               const otherUsername = incomingMsgData.usernames?.find(
                 (str: any) => str !== this.currentUser.username
               ) ?? 'default';
+  
               const image = await this.rocketChatApi.resolveImageUrl(otherUsername);
+  
               incomingMsgData.name = fnameMap.get(incomingMsgData._id) ?? incomingMsgData.name;
               incomingMsgData.image = image;
               incomingMsgData.unread = unreadMap.get(incomingMsgData._id);
@@ -121,8 +122,9 @@ export class MessageListingComponent implements OnInit {
             this.messagesList.sort((a: any, b: any) => {
               const dateA = a.lastMessage ? new Date(a.lastMessage.ts).getTime() : 0;
               const dateB = b.lastMessage ? new Date(b.lastMessage.ts).getTime() : 0;
-              return dateA - dateB;
+              return dateB - dateA;
             });
+  
             const hasUnreadMessages = this.messagesList.some(
               (room: any) => room.unread > 0
             );
@@ -136,10 +138,13 @@ export class MessageListingComponent implements OnInit {
   
 
   filterMessages() {
-    if(this.searchTerm?.length<3) return;
-    this.filteredMessagesList = this.messagesList.filter((message: any) =>
-      message.name.toLowerCase().includes(this.searchTerm.toLowerCase())
-    );
+    if(this.searchTerm?.length<3){
+      this.filteredMessagesList = this.messagesList;
+    }else{
+      this.filteredMessagesList = this.messagesList.filter((message: any) =>
+        message.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+      );
+    }
   }
 
   navigate(message: any) {

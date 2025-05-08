@@ -50,7 +50,7 @@
       </div>
     </div>
 
-    <div *ngIf="searchTerm && filteredMessagesList.length === 0" class="text-center">
+    <div *ngIf="searchTerm && searchTerm.length > 3 && filteredMessagesList.length === 0" class="text-center">
       <p class="text-gray-500">No messages found.</p>
     </div>
   </ng-container>
