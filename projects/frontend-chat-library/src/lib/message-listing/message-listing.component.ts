@@ -13,6 +13,7 @@ export class MessageListingComponent implements OnInit {
   @Input() config: any;
   @Output() onSelect = new EventEmitter();
   @Output() newMessageEvent = new EventEmitter<any>();
+  @Output() toastMessageEvent = new EventEmitter<any>();
   messagesList: any;
   currentUser: any;
   ws: any;
@@ -137,15 +138,21 @@ export class MessageListingComponent implements OnInit {
   }
   
 
-  filterMessages() {
-    if(this.searchTerm?.length<3){
-      this.filteredMessagesList = this.messagesList;
-    }else{
-      this.filteredMessagesList = this.messagesList.filter((message: any) =>
-        message.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+  filterMessages(event: any) {
+  if (event.length >= 3) {
+    this.filteredMessagesList = this.messagesList.filter((message: any) =>
+        message.name.toLowerCase().includes(event.toLowerCase())
       );
+  } else if(event.length > 0 && event.length < 3) {
+    let toastMessage = {
+      message: 'ENTER_MIN_CHARACTER',
+      type: 'danger'
     }
+    this.toastMessageEvent.emit(toastMessage);
+  }else{
+    this.filteredMessagesList = this.messagesList;
   }
+}
 
   navigate(message: any) {
     const payload = {
@@ -179,5 +186,11 @@ export class MessageListingComponent implements OnInit {
     if (this.ws) {
       this.ws.close();
     }
+  }
+  clearSearch() {
+    this.searchTerm = '';
+    this.filteredMessagesList = this.messagesList.filter((message: any) =>
+        message.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+      );
   }
 }
