@@ -124,12 +124,7 @@ export class MessageListingComponent implements OnInit {
               const dateB = b.lastMessage ? new Date(b.lastMessage.ts).getTime() : 0;
               return dateB - dateA;
             });
-  
-            const hasUnreadMessages = this.messagesList.some(
-              (room: any) => room.unread > 0
-            );
-            this.newMessageEvent.emit(hasUnreadMessages);
-            this.chatService.messageBadge(hasUnreadMessages);
+
           }
         }
       }
