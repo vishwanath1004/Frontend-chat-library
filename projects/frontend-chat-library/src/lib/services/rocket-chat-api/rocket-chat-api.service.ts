@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 import { urlConstants } from '../../constants/urlConstants';
+import { FrontendChatLibraryService } from '../../frontend-chat-library.service';
 
 @Injectable({
   providedIn: 'root',
@@ -9,13 +10,17 @@ import { urlConstants } from '../../constants/urlConstants';
 export class RocketChatApiService {
   baseUrl: any;
   headers: any;
-
-  constructor(private http: HttpClient) {}
+  private ws: WebSocket | null = null;
+  private messagesList: any[] = [];
+  constructor(
+    private http: HttpClient,
+    private chatService: FrontendChatLibraryService
+  ) {}
 
   async setHeadersAndWebsocket(config: any, ws: any) {
     this.baseUrl = config.chatBaseUrl;
     this.headers = {
-    'X-Auth-Token': config.xAuthToken,
+      'X-Auth-Token': config.xAuthToken,
       'X-User-Id': config.userId,
       // You can add more headers if needed
     };
@@ -31,7 +36,7 @@ export class RocketChatApiService {
           msg: 'method',
           id: new Date().getTime().toString(),
           method: 'login',
-          params: [{ resume: config.xAuthToken}],
+          params: [{ resume: config.xAuthToken }],
         })
       );
       ws.send(
@@ -193,13 +198,106 @@ export class RocketChatApiService {
     );
   }
 
+  async initializeWebSocketAndCheckUnread() {
+    const config = this.chatService.config;
+    this.ws = new WebSocket(config.chatWebSocketUrl);
+
+    this.ws.onmessage = async (event: any) => {
+      const data = JSON.parse(event.data);
+      
+      if (data.msg === 'ping') {
+        this.ws?.send(JSON.stringify({ msg: 'pong' }));
+      }
+      
+      if (data.msg === 'connected') {
+        await this.subscribeToChannels(config, this.ws!);
+      }
+      
+      if (data.msg === 'changed' && data.fields) {
+        await this.handleMessageChangeEvent(data.fields);
+      }
+    };
+    await this.setHeadersAndWebsocket(config, this.ws!);
+    await this.loadInitialMessages(this.ws!, config);
+    this.ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+    
+    this.ws.onclose = (event) => {
+      console.log('WebSocket closed:', event.code, event.reason);
+    };
+  }
+
+private async loadInitialMessages(ws: WebSocket, config: any) {
+  const [roomList, subscribedRooms, currentUser] = await Promise.all([
+    this.getRoomList(ws),
+    this.getSubscribedRoomList(ws),
+    this.getCurrentUserDetails()
+  ]);
+
+  const unreadMap = new Map(subscribedRooms.update.map((item: any) => [item.rid, item.unread]));
+  const fnameMap = new Map(subscribedRooms.update.map((item: any) => [item.rid, item.fname]));
+
+  this.messagesList = await Promise.all(
+    roomList.update.map(async (room: any) => {
+      const otherUsername = room.usernames?.find((str: any) => str !== currentUser.username) ?? 'default';
+      const image = await this.resolveImageUrl(otherUsername);
+
+      return {
+        ...room,
+        name: fnameMap.get(room._id) ?? room.name,
+        image,
+        unread: unreadMap.get(room._id),
+        time: new Date(room.ts).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+      };
+    })
+  );
+
+  const hasUnread = this.messagesList.some((room: any) => room.unread > 0);
+  this.chatService.initialBadge =hasUnread;
+}
+
+private async handleMessageChangeEvent(fields: any) {
+  const { eventName, args } = fields;
+
+  if (eventName.includes('rooms-changed') && args[0] === 'updated') {
+    const incomingMsgData = args[1];
+
+    if (incomingMsgData.lastMessage) {
+      const roomIndex = this.messagesList.findIndex(
+        (obj: any) => obj._id === incomingMsgData.lastMessage.rid
+      );
+
+      if (roomIndex !== -1) {
+        const room = this.messagesList[roomIndex];
+        room.lastMessage = incomingMsgData.lastMessage;
+        room.unread += 1;
+
+        const [updatedRoom] = this.messagesList.splice(roomIndex, 1);
+        this.messagesList.unshift(updatedRoom);
+      } else {
+        const subscribedRooms = await this.getSubscribedRoomList(this.ws!);
+        const unreadMap = new Map(subscribedRooms.update.map((item: any) => [item.rid, item.unread]));
+
+        incomingMsgData.unread = unreadMap.get(incomingMsgData._id);
+        this.messagesList.unshift(incomingMsgData);
+      }
+
+      const hasUnreadMessages = this.messagesList.some(room => room.unread > 0);
+      this.chatService.messageBadge(hasUnreadMessages);
+    }
+  }
+}
 
   async getTextLimit(): Promise<number | null> {
     const httpOptions = {
       headers: new HttpHeaders(this.headers),
     };
     const methodId = '12';
-  
+
     const payload = {
       message: JSON.stringify({
         msg: 'method',
@@ -220,7 +318,6 @@ export class RocketChatApiService {
       return null;
     }
   }
-
 
   async resolveImageUrl(username: string): Promise<string> {
     const imageUrl = `${this.baseUrl}/avatar/${username}`;
