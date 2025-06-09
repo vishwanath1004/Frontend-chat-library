@@ -99,7 +99,11 @@ export class MessageListingComponent implements OnInit {
             if (roomIndex !== -1) {
               const room = this.messagesList[roomIndex];
               room.lastMessage = incomingMsgData.lastMessage;
-              room.unread += 1;
+              if(room.lastMessage.u._id != this.currentUser._id) {
+                room.unread += 1;
+              } else {
+                room.unread = 0;
+              }
   
               const [updatedRoom] = this.messagesList.splice(roomIndex, 1);
               this.messagesList.unshift(updatedRoom);
