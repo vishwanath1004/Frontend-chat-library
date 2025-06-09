@@ -9,8 +9,13 @@
         class="px-4 py-2"
         placeholder="Search by name"
         [(ngModel)]="searchTerm"
-        (input)="filterMessages()"
+        (keydown.enter)="filterMessages(searchTerm)"
       />
+      @if (searchTerm) {
+    <button matSuffix matIconButton aria-label="Clear" class="p-3 mr-2 search-btn" (click)="clearSearch()">
+      <mat-icon>close</mat-icon>
+    </button>
+  }
     </mat-form-field>
   </div>
 
