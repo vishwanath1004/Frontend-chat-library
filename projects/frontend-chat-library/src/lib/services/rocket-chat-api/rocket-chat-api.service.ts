@@ -201,7 +201,6 @@ export class RocketChatApiService {
   async initializeWebSocketAndCheckUnread() {
     const config = this.chatService.config;
     this.ws = new WebSocket(config.chatWebSocketUrl);
-    const currentUser = await this.getCurrentUserDetails();
 
     this.ws.onmessage = async (event: any) => {
       const data = JSON.parse(event.data);
@@ -219,7 +218,9 @@ export class RocketChatApiService {
       }
     };
     await this.setHeadersAndWebsocket(config, this.ws!);
+    const currentUser = await this.getCurrentUserDetails();
     await this.loadInitialMessages(this.ws!, config, currentUser);
+
     this.ws.onerror = (error) => {
       console.error('WebSocket error:', error);
     };
