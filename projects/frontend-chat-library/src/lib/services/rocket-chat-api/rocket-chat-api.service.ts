@@ -214,11 +214,13 @@ export class RocketChatApiService {
       }
       
       if (data.msg === 'changed' && data.fields) {
-        await this.handleMessageChangeEvent(data.fields);
+        await this.handleMessageChangeEvent(data.fields, currentUser);
       }
     };
     await this.setHeadersAndWebsocket(config, this.ws!);
-    await this.loadInitialMessages(this.ws!, config);
+    const currentUser = await this.getCurrentUserDetails();
+    await this.loadInitialMessages(this.ws!, config, currentUser);
+
     this.ws.onerror = (error) => {
       console.error('WebSocket error:', error);
     };
@@ -228,13 +230,11 @@ export class RocketChatApiService {
     };
   }
 
-private async loadInitialMessages(ws: WebSocket, config: any) {
-  const [roomList, subscribedRooms, currentUser] = await Promise.all([
+private async loadInitialMessages(ws: WebSocket, config: any, currentUser: any) {
+  const [roomList, subscribedRooms, ] = await Promise.all([
     this.getRoomList(ws),
-    this.getSubscribedRoomList(ws),
-    this.getCurrentUserDetails()
+    this.getSubscribedRoomList(ws)
   ]);
-
   const unreadMap = new Map(subscribedRooms.update.map((item: any) => [item.rid, item.unread]));
   const fnameMap = new Map(subscribedRooms.update.map((item: any) => [item.rid, item.fname]));
 
@@ -260,12 +260,11 @@ private async loadInitialMessages(ws: WebSocket, config: any) {
   this.chatService.initialBadge =hasUnread;
 }
 
-private async handleMessageChangeEvent(fields: any) {
+private async handleMessageChangeEvent(fields: any, currentUser:any) {
   const { eventName, args } = fields;
-
+ 
   if (eventName.includes('rooms-changed') && args[0] === 'updated') {
     const incomingMsgData = args[1];
-
     if (incomingMsgData.lastMessage) {
       const roomIndex = this.messagesList.findIndex(
         (obj: any) => obj._id === incomingMsgData.lastMessage.rid
@@ -274,15 +273,23 @@ private async handleMessageChangeEvent(fields: any) {
       if (roomIndex !== -1) {
         const room = this.messagesList[roomIndex];
         room.lastMessage = incomingMsgData.lastMessage;
-        room.unread += 1;
+        if(room.lastMessage.u._id != currentUser._id) {
+          room.unread += 1;
+        } else {
+          room.unread = 0;
+        }
+       
 
         const [updatedRoom] = this.messagesList.splice(roomIndex, 1);
+
         this.messagesList.unshift(updatedRoom);
       } else {
         const subscribedRooms = await this.getSubscribedRoomList(this.ws!);
+    
         const unreadMap = new Map(subscribedRooms.update.map((item: any) => [item.rid, item.unread]));
 
         incomingMsgData.unread = unreadMap.get(incomingMsgData._id);
+      
         this.messagesList.unshift(incomingMsgData);
       }
 
