@@ -95,15 +95,12 @@ export class MessageListingComponent implements OnInit {
             const roomIndex = this.messagesList.findIndex(
               (obj: any) => obj._id === incomingMsgData.lastMessage.rid
             );
-  
             if (roomIndex !== -1) {
               const room = this.messagesList[roomIndex];
               room.lastMessage = incomingMsgData.lastMessage;
               if(room.lastMessage.u._id != this.currentUser._id) {
                 room.unread += 1;
-              } else {
-                room.unread = 0;
-              }
+              } 
   
               const [updatedRoom] = this.messagesList.splice(roomIndex, 1);
               this.messagesList.unshift(updatedRoom);
