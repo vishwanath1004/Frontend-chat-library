@@ -84,8 +84,9 @@
     </div>
   </div>
   
-  <div class="p-3 border-t  items-center psfixed">
-    <div style="display: flex; justify-content: end;"> {{messageText?.length}} / {{textLimit}}
+  @if (canSendMessage) {
+    <div class="p-3 border-t  items-center psfixed">
+    <div style="display: flex; justify-content: end;"> {{messageText.length}} / {{textLimit}}
       </div>
     <div class="flex">
     <input type="text" [(ngModel)]="messageText" placeholder="Type a message"
@@ -97,4 +98,17 @@
     </button>
     </div>
   </div>
+  } @else {
+    <div class="flex justify-center p-3 border-t items-center psfixed">
+        <div>
+          <mat-icon>info</mat-icon>
+          <span style="vertical-align: super; font-size: 16px;">
+            Messages cannot be sent 
+          </span>
+          <p style="color: grey; font-size: 14px; margin-top: 5px; margin-left: 30px;">x
+            You can no longer send messages to this user
+          </p>
+        </div>
+      </div>
+  }
 </div>

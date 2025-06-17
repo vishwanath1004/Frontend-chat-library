@@ -41,6 +41,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   private pageSizeInDays = 7;
   private startDate!: Date;
   private endDate!: Date;
+  canSendMessage: any;
 
   constructor(
     private rocketChatApi: RocketChatApiService,
@@ -87,6 +88,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
     );
     this.friendDetails = await this.rocketChatApi.getUserInfoByUsername(friendName);
     this.friendDetails.profilePic = await this.rocketChatApi.resolveImageUrl(this.friendDetails.user.username);
+    this.canSendMessage = this.friendDetails?.user?.active;
     this.isLoading = false;
     this.ws.onmessage = async (event: MessageEvent) => {
       const data = JSON.parse(event.data);
