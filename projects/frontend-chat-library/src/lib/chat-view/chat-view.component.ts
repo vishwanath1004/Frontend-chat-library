@@ -25,6 +25,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   @Output() backEvent = new EventEmitter();
   @Output() profileEvent = new EventEmitter();
   @Output() limitExceededEvent = new EventEmitter();
+  @Input() meta: any;
 
   textLimit = 250;
   currentUser: any;
@@ -42,6 +43,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   private startDate!: Date;
   private endDate!: Date;
   canSendMessage: boolean = true;
+  CHAT_LIB_META_KEYS: any;
 
   constructor(
     private rocketChatApi: RocketChatApiService,
