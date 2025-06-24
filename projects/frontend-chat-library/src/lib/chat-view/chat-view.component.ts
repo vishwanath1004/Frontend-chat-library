@@ -41,7 +41,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   private pageSizeInDays = 7;
   private startDate!: Date;
   private endDate!: Date;
-  canSendMessage: any;
+  canSendMessage: boolean = true;
 
   constructor(
     private rocketChatApi: RocketChatApiService,
