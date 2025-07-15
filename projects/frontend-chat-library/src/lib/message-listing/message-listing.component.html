@@ -41,7 +41,11 @@
             class="mb-3"
             [ngStyle]="{ color: message?.unread ? config?.bgColor : '' }"
           >
-            {{ message?.time }}
+          {{ message?.lastMessage?.ts 
+              ? (message.lastMessage.ts | date:'h:mm a':'Asia/Kolkata') 
+              : (message?.lastMessage?.ts?.$date 
+                  ? (message.lastMessage.ts.$date | date:'h:mm a':'en-IN') 
+                  : '') }}
           </div>
           <div class="absolute bottom-3 right-0 -mb-6" *ngIf="message?.unread">
             <div
