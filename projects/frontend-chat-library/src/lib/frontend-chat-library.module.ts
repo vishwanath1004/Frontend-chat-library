@@ -12,12 +12,14 @@ import { HttpClientModule } from '@angular/common/http';
 import { FrontendChatLibraryModuleRouting } from './frontend-chat-library-routing.module';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { AttachmentPreviewDialogComponent } from './attachment-preview-dialog/attachment-preview-dialog.component';
 
 @NgModule({
   declarations: [
     FrontendChatLibraryComponent,
     MessageListingComponent,
     ChatViewComponent,
+    AttachmentPreviewDialogComponent
   ],
   imports: [
     CommonModule,
@@ -34,6 +36,7 @@ import { RouterModule } from '@angular/router';
     FrontendChatLibraryComponent,
     ChatViewComponent,
     MessageListingComponent,
+    AttachmentPreviewDialogComponent
   ],
   schemas: [NO_ERRORS_SCHEMA],
 })

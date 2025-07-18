@@ -85,17 +85,24 @@
   </div>
   
   @if (canSendMessage) {
-    <div class="p-3 border-t  items-center psfixed">
-    <div style="display: flex; justify-content: end;"> {{messageText.length}} / {{textLimit}}
+    <div class="p-3 border-t items-center psfixed">
+    <div style="display: flex; justify-content: end;">
+      {{messageText.length}} / {{textLimit}}
+    </div>
+    <div class="flex items-center">
+      <div class="relative flex-1">
+        <textarea [(ngModel)]="messageText" placeholder="Type a message"
+          class="w-full border rounded-full px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          style="height: 50px; padding-right: 50px;"></textarea>
+        <button mat-icon-button (click)="fileInput.click()" class="attachment-button absolute right-2 top-1/2 -translate-y-1/2">
+          <mat-icon>attachment</mat-icon>
+        </button>
+        <input hidden type="file" #fileInput (change)="onFileSelected($event)" multiple>
       </div>
-    <div class="flex">
-    <input type="text" [(ngModel)]="messageText" placeholder="Type a message"
-      class="flex-1 border rounded-full px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      (keyup.enter)="sendMessage()" />
-    <button [ngStyle]="{ background: config?.bgColor, color: config?.textColor }" style="padding-bottom: 8px"
-      class="ml-4 bg-blue-500 text-white rounded-full p-3" (click)="sendMessage()">
-      <mat-icon> send</mat-icon>
-    </button>
+      <button [ngStyle]="{ background: config?.bgColor, color: config?.textColor }" style="padding-bottom: 8px"
+        class="ml-4 bg-blue-500 text-white rounded-full p-3" (click)="sendMessage()" [disabled]="!messageText.trim()">
+        <mat-icon>send</mat-icon>
+      </button>
     </div>
   </div>
   } @else {

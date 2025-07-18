@@ -13,6 +13,9 @@ import { RocketChatApiService } from '../services/rocket-chat-api/rocket-chat-ap
 import { urlConstants } from '../constants/urlConstants';
 import { FrontendChatLibraryService } from '../frontend-chat-library.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { MatDialog } from '@angular/material/dialog';
+import { AttachmentPreviewDialogComponent } from '../attachment-preview-dialog/attachment-preview-dialog.component';
+
 @Component({
   selector: 'lib-chat-view',
   templateUrl: './chat-view.component.html',
@@ -44,12 +47,14 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   private endDate!: Date;
   canSendMessage: boolean = true;
   CHAT_LIB_META_KEYS: any;
+  selectedFiles: any[] = [];
 
   constructor(
     private rocketChatApi: RocketChatApiService,
     private chatService: FrontendChatLibraryService,
     private cdk: ChangeDetectorRef,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    public dialog: MatDialog
   ) {}
 
   ngAfterViewInit() {
@@ -109,11 +114,21 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
             hour12: true,
           });
           const image = await this.rocketChatApi.resolveImageUrl(newMessage.u.username);
+          const attachments = (newMessage.attachments || []).map((att: any) => {
+            if (att.video_url) {
+              att.video_url = this.rocketChatApi.baseUrl + att.video_url;
+            }
+            if (att.image_url) {
+              att.image_url = this.rocketChatApi.baseUrl + att.image_url;
+            }
+            return att;
+          });
           const formattedMessage = {
             author: isAuthor,
             content,
             time: formattedTime,
             image,
+            attachments
           };
           const date = timestamp.toLocaleDateString();
           const group = this.messages.find((m: any) => m.date === date);
@@ -212,6 +227,15 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
               minute: '2-digit',
               hour12: true,
             }),
+            attachments: (message.attachments || []).map((att: any) => {
+              if (att.video_url) {
+                att.video_url = this.rocketChatApi.baseUrl + att.video_url;
+              }
+              if (att.image_url) {
+                att.image_url = this.rocketChatApi.baseUrl + att.image_url;
+              }
+              return att;
+            })
           }
         };
       })
@@ -229,10 +253,11 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
 
   async sendMessage() {
     if (!this.messageText.trim()) return;
-      if(this.messageText.length > this.textLimit) {
-        this.limitExceededEvent.emit(this.textLimit);
-        return;
-      }
+    if (this.messageText.length > this.textLimit) {
+      this.limitExceededEvent.emit(this.textLimit);
+      return;
+    }
+
     const payload = {
       msg: 'method',
       method: 'sendMessage',
@@ -244,6 +269,52 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
 
     this.messageText = '';
     this.scrollToBottom();
+  }
+
+  onFileSelected(event: any) {
+    const files = event.target.files;
+    if (files.length === 0) {
+      return;
+    }
+
+    if (files.length > 3) {
+      alert('You can only select a maximum of 3 files.');
+      return;
+    }
+
+    const selectedFiles: any[] = [];
+    for (const file of files) {
+      if (file.size > 50 * 1024 * 1024) {
+        alert('File size should not exceed 50MB.');
+        continue;
+      }
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        selectedFiles.push({ file, preview: e.target.result });
+        if (selectedFiles.length === files.length) {
+          this.openAttachmentPreview(selectedFiles);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  openAttachmentPreview(files: any[]): void {
+    const dialogRef = this.dialog.open(AttachmentPreviewDialogComponent, {
+      width: '400px',
+      data: {
+        files: files,
+        rid: this.rid,
+        ws: this.ws,
+        textLimit: this.textLimit
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.scrollToBottom();
+      }
+    });
   }
 
   scrollToBottom(): void {

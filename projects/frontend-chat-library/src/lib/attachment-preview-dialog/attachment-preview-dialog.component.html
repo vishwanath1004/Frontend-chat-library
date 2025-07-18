@@ -1,0 +1,47 @@
+<div class="dialog-container">
+  <div class="dialog-header">
+    <button mat-icon-button (click)="onClose()" class="close-button">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="carousel-container">
+    <div class="carousel-content">
+      <div *ngFor="let file of data.files; let i = index" class="carousel-item" [class.active]="i === currentIndex">
+        <ng-container [ngSwitch]="true">
+          <img *ngSwitchCase="isImage(file)" [src]="file.preview" class="carousel-image">
+          <video *ngSwitchCase="isVideo(file)" [src]="file.preview" class="carousel-video" controls></video>
+          <div *ngSwitchDefault class="w-full h-full bg-gray-200 flex items-center justify-center rounded">
+            <mat-icon class="text-6xl">insert_drive_file</mat-icon>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <button mat-icon-button (click)="previous()" class="carousel-control prev" [disabled]="currentIndex === 0">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <button mat-icon-button (click)="next()" class="carousel-control next" [disabled]="currentIndex === data.files.length - 1">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  </div>
+
+  <div class="thumbnail-container">
+    <div *ngFor="let file of data.files; let i = index" class="thumbnail-item" [class.active]="i === currentIndex" (click)="setCurrentIndex(i)">
+      <img [src]="file.preview" class="thumbnail-image">
+    </div>
+  </div>
+
+  <div class="dialog-footer">
+    <div class="flex items-center">
+      <div class="relative flex-1">
+        <textarea [(ngModel)]="messageText" placeholder="Type a message"
+          class="w-full border rounded-full px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          style="height: 50px; padding-right: 50px;"></textarea>
+      </div>
+      <button mat-fab color="primary" (click)="sendMessage()" [disabled]="!messageText.trim() && data.files.length === 0">
+        <mat-icon>send</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+

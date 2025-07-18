@@ -346,4 +346,19 @@ private async handleMessageChangeEvent(fields: any, currentUser:any) {
       return defaultImage;
     }
   }
+
+  async uploadFile(rid: string, file: File): Promise<any> {
+    const url = `${this.baseUrl}/api/v1/rooms.upload/${rid}`;
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+
+    const httpOptions = {
+      headers: new HttpHeaders({
+        'X-Auth-Token': this.headers['X-Auth-Token'],
+        'X-User-Id': this.headers['X-User-Id'],
+      }),
+    };
+
+    return lastValueFrom(this.http.post(url, formData, httpOptions));
+  }
 }
