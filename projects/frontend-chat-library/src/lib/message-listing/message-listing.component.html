@@ -41,11 +41,11 @@
             class="mb-3"
             [ngStyle]="{ color: message?.unread ? config?.bgColor : '' }"
           >
-          {{ message?.lastMessage?.ts 
-              ? (message.lastMessage.ts | date:'h:mm a':'Asia/Kolkata') 
-              : (message?.lastMessage?.ts?.$date 
-                  ? (message.lastMessage.ts.$date | date:'h:mm a':'en-IN') 
-                  : '') }}
+          {{ message?.lastMessage?.ts?.$date
+            ? (message.lastMessage.ts.$date | date:'h:mm a':'en-IN')
+            : (message?.lastMessage?.ts
+              ? (message.lastMessage.ts | date:'h:mm a':'Asia/Kolkata')
+              : '') }}
           </div>
           <div class="absolute bottom-3 right-0 -mb-6" *ngIf="message?.unread">
             <div
