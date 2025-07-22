@@ -111,6 +111,10 @@
   border-radius: 50%;
   margin-right: 10px;
 }
+ .text-break {
+    word-break: break-word;
+  }
+
 
 @keyframes shimmer {
   0% {
