@@ -33,7 +33,6 @@ export class MessageListingComponent implements OnInit {
     this.config = this.chatService.config;
     this.ws = new WebSocket(this.config.chatWebSocketUrl);
     await this.rocketChatApi.setHeadersAndWebsocket(this.config, this.ws);
-  
     this.currentUser = await this.rocketChatApi.getCurrentUserDetails();
   
     let roomList = await this.rocketChatApi.getRoomList(this.ws);
@@ -79,7 +78,6 @@ export class MessageListingComponent implements OnInit {
     let msgList = await this.rocketChatApi.subscribeToChannels(this.config, this.ws);
     this.ws.onmessage = async (event: any) => {
       let data = JSON.parse(event.data);
-  
       if (data.msg === 'ping') {
         const pongMessage = { msg: 'pong' };
         this.ws.send(JSON.stringify(pongMessage));
@@ -100,8 +98,7 @@ export class MessageListingComponent implements OnInit {
               room.lastMessage = incomingMsgData.lastMessage;
               if(room.lastMessage.u._id != this.currentUser._id) {
                 room.unread += 1;
-              } 
-  
+              }
               const [updatedRoom] = this.messagesList.splice(roomIndex, 1);
               this.messagesList.unshift(updatedRoom);
             } else {
@@ -126,7 +123,6 @@ export class MessageListingComponent implements OnInit {
               const dateB = b.lastMessage ? new Date(b.lastMessage.ts).getTime() : 0;
               return dateB - dateA;
             });
-
           }
         }
       }
@@ -176,6 +172,7 @@ export class MessageListingComponent implements OnInit {
       this.newMessageEvent.emit(false);
     }
     this.onSelect.emit(message.lastMessage.rid);
+    this.rocketChatApi.isWebSocketInitialized = true;
     this.rid = message.lastMessage.rid;
   }
   ngOnDestroy() {
