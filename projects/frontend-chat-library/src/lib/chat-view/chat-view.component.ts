@@ -65,6 +65,8 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   async ngOnInit() {
     this.config = this.config || this.chatService.config;
     if (!this.rid) return;
+    if(!this.rocketChatApi.isWebSocketInitialized)
+      this.rocketChatApi.isWebSocketInitialized = true;
     await this.initializeWebSocket();
     await this.loadChatHistory();
     await this.markRoomAsRead();
@@ -101,9 +103,6 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
       if (data.msg === 'changed' && data.collection === 'stream-room-messages') {
         const newMessage = data.fields?.args?.[0];
         if (newMessage && newMessage.rid === this.rid) {
-          // if(!this.rocketChatApi.isWebSocketInitialized ) {
-          // this.rocketChatApi.isWebSocketInitialized = true;
-          // }
           const isAuthor = this.currentUser._id === newMessage.u._id;
           const content = this.sanitizer.bypassSecurityTrustHtml(this.convertLinks(newMessage.msg));
           const timestamp = new Date(newMessage.ts?.$date || newMessage.ts);
@@ -298,7 +297,5 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
       const encodedUrl = encodeURI(url);
       return `<a href="${encodedUrl}" target="_blank" rel="noopener noreferrer">${url}</a>`;
     });
-  }
-  
-  
+  }  
 }
