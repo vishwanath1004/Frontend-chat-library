@@ -65,9 +65,9 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   async ngOnInit() {
     this.config = this.config || this.chatService.config;
     if (!this.rid) return;
-    if(!this.rocketChatApi.isWebSocketInitialized)
-      this.rocketChatApi.isWebSocketInitialized = true;
     await this.initializeWebSocket();
+    if(!this.rocketChatApi.isWebSocketInitialized)
+    this.rocketChatApi.isWebSocketInitialized = true;
     await this.loadChatHistory();
     await this.markRoomAsRead();
 
@@ -297,5 +297,5 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
       const encodedUrl = encodeURI(url);
       return `<a href="${encodedUrl}" target="_blank" rel="noopener noreferrer">${url}</a>`;
     });
-  }  
+  }
 }
