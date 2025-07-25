@@ -13,6 +13,7 @@ import { RocketChatApiService } from '../services/rocket-chat-api/rocket-chat-ap
 import { urlConstants } from '../constants/urlConstants';
 import { FrontendChatLibraryService } from '../frontend-chat-library.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+
 @Component({
   selector: 'lib-chat-view',
   templateUrl: './chat-view.component.html',
@@ -64,9 +65,11 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   async ngOnInit() {
     this.config = this.config || this.chatService.config;
     if (!this.rid) return;
-
     await this.initializeWebSocket();
+    if(!this.rocketChatApi.isWebSocketInitialized)
+    this.rocketChatApi.isWebSocketInitialized = true;
     await this.loadChatHistory();
+    await this.markRoomAsRead();
 
     this.isLoading = false;
     this.scrollToBottom();
@@ -125,6 +128,12 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
     
           this.cdk.detectChanges();
           this.scrollToBottom();
+          if(this.rocketChatApi.isWebSocketInitialized) {
+           await this.markRoomAsRead();
+          }
+        
+        } else if (newMessage && newMessage.rid !== this.rid) {
+          this.rocketChatApi.isWebSocketInitialized = false;
         }
       }
     };
@@ -134,6 +143,21 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
     this.ws.onclose = () => {
       setTimeout(() => this.initializeWebSocket(), 5000);
     };
+  }
+
+  async markRoomAsRead(): Promise<void> {
+    try {
+      const payload = {
+        msg: 'method',
+        method: 'readMessages',
+        id: Date.now().toString(),
+        params: [this.rid]
+      };if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify(payload));
+      }
+    } catch (error) {
+      console.error('Failed to mark room as read:', error);
+    }
   }
 
   async loadChatHistory(): Promise<void> {
