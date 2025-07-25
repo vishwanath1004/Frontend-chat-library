@@ -172,7 +172,6 @@ export class MessageListingComponent implements OnInit {
       this.newMessageEvent.emit(false);
     }
     this.onSelect.emit(message.lastMessage.rid);
-    this.rocketChatApi.isWebSocketInitialized = true;
     this.rid = message.lastMessage.rid;
   }
   ngOnDestroy() {
