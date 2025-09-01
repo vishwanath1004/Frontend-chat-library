@@ -49,9 +49,7 @@
         <div class="chat-card">
           <div
             class="d-flex flex-align-end"
-            [ngStyle]="{
-              'justify-content': message?.author ? 'end' : 'start'
-            }"
+            [ngStyle]="{ 'justify-content': message?.author ? 'end' : 'start' }"
           >
             <img
               *ngIf="!message?.author"
@@ -61,21 +59,49 @@
             />
             <div
               class="chat-card-content"
-              [ngStyle]="{
-                background: message?.author ? '#68686866' : '#f1f1f1'
-              }"
+              [ngStyle]="{ background: message?.author ? '#68686866' : '#f1f1f1' }"
             >
-             <span style="text-align: left; color:#000" [innerHTML]="message.content"></span>
-              <span>
+              <ng-container *ngIf="message?.attachments?.length">
+                <ng-container *ngFor="let attachment of message.attachments">
+                  <div style="position: relative;">
+                    <div class="download-icon">
+                      <mat-icon 
+                        (click)="downloadAttachment(attachment)" 
+                        style="cursor: pointer; margin-right: 4px;">download</mat-icon>
+                        <span>{{ attachment | fileSize }}</span>
+                    </div>
+                    <img 
+                      [src]="baseUrl + attachment.title_link + '?rc_uid=' + config?.userId + '&rc_token=' + config?.xAuthToken" 
+                      *ngIf="isImage(attachment)" 
+                      style="width: 100%; height: auto; border-radius: 8px;" 
+                    />
+                    <video 
+                      [src]="baseUrl + attachment.title_link + '?rc_uid=' + config?.userId + '&rc_token=' + config?.xAuthToken" 
+                      controls 
+                      *ngIf="isVideo(attachment)" 
+                      style="width: 100%; height: auto; border-radius: 8px;">
+                    </video>
+                   ---- json {{attachment | json}} 
+                    <div 
+                      *ngIf="!isDoc(attachment) && !isImage(attachment)" 
+                      class="doc-preview">
+                      <a
+                        [href]="baseUrl + attachment.title_link + '?rc_uid=' + config?.userId + '&rc_token=' + config?.xAuthToken"
+                        target="_blank" 
+                        class="link-style">
+                        <mat-icon *ngIf="attachment?.format && attachment?.format == 'PDF'" class="doc-icon"> picture_as_pdf </mat-icon>
+                        <mat-icon *ngIf="attachment?.format && attachment?.format != 'PDF'" class="doc-icon"> docs </mat-icon>
+                        <div style="color: #822215; text-align: left;">{{ attachment.title }} --- {{attachment?.format}} opopop {{attachment | json}}</div>
+                      </a>
+                    </div>
+                  </div>
+                </ng-container>
+                </ng-container>
+              <span style="text-align: left; color: #000" [innerHTML]="message?.content?.changingThisBreaksApplicationSecurity"></span>
+              <span style="display: block; font-size: 12px; color: gray; text-align: right;">
                 {{ message.time }}
               </span>
             </div>
-            <!-- <img
-              *ngIf="message?.author"
-              [src]="message.image"
-              alt="Profile Picture"
-              class="chat-pic"
-            /> -->
           </div>
         </div>
       </div>
@@ -94,9 +120,22 @@
         <textarea [(ngModel)]="messageText" placeholder="Type a message"
           class="w-full border rounded-full px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           style="height: 50px; padding-right: 50px;"></textarea>
-        <button mat-icon-button (click)="fileInput.click()" class="attachment-button absolute right-2 top-1/2 -translate-y-1/2">
+        <button mat-icon-button [matMenuTriggerFor]="attachmentMenu" class="attachment-button absolute right-2 top-1/2 -translate-y-1/2">
           <mat-icon>attachment</mat-icon>
         </button>
+        <mat-menu #attachmentMenu="matMenu" class="bg-white text-gray-800 rounded-md shadow-lg">
+          <div class="flex">
+            <button mat-menu-item (click)="openFiles()">
+              <mat-icon>folder</mat-icon>
+              <div>Files</div>
+            </button>
+            <button mat-menu-item (click)="openGallery()">
+              <mat-icon>photo_library</mat-icon>
+              <div>Gallery</div>
+            </button>
+         
+          </div>
+        </mat-menu>
         <input hidden type="file" #fileInput (change)="onFileSelected($event)" multiple>
       </div>
       <button [ngStyle]="{ background: config?.bgColor, color: config?.textColor }" style="padding-bottom: 8px"

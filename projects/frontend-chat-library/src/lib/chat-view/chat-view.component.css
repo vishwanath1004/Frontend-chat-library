@@ -1,6 +1,3 @@
-.margin-bottom-0 {
-    margin-bottom: 0px;
-}
 
 .chat-card{
     padding: 0px;
@@ -24,12 +21,7 @@
 .flex-align-end{
     align-items: end;
 }
-.chat-card-content span{
-    display: block; 
-    text-align: right; 
-    color: gray; 
-    font-size: 12px;
-}
+
 .chat-pic{
     width: 30px;
     height: 30px;
@@ -112,13 +104,6 @@
 
 .p-3 {
     padding: 0.75rem;
-}
-
-.psfixed {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background: #fff;
 }
 
 .flex-1 {
@@ -236,7 +221,8 @@
 }
 
 .top-1\/2 {
-    top: 50%;
+    top: 26%;
+    right:15px;
 }
 
 .-translate-y-1\/2 {
@@ -260,4 +246,33 @@
   max-width: 100%;
   border-radius: 8px;
   margin-top: 8px;
+}
+.doc-icon{
+    display: inline-block;
+    fill: currentColor;
+    height: 60px;
+    width: 60px;
+    font-size: 60px;
+}
+
+.link-style{
+    text-decoration: none; 
+    display: flex; 
+    gap:10px;
+    align-items: center;
+    text-align: center;
+}
+.doc-preview{
+    display: table-column;
+}
+.download-icon{
+    position: absolute; 
+    top: 8px; 
+    right: 8px; 
+    display: flex; 
+    align-items: center; 
+    background: #fff; 
+    color: grey; 
+    padding: 4px 8px;
+    border-radius: 12px;
 }

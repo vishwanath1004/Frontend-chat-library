@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ViewChild, ElementRef } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { RocketChatApiService } from '../services/rocket-chat-api/rocket-chat-api.service';
 
@@ -8,6 +8,7 @@ import { RocketChatApiService } from '../services/rocket-chat-api/rocket-chat-ap
   styleUrls: ['./attachment-preview-dialog.component.css']
 })
 export class AttachmentPreviewDialogComponent {
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   messageText: string = '';
   currentIndex = 0;
 
@@ -50,6 +51,32 @@ export class AttachmentPreviewDialogComponent {
 
   setCurrentIndex(index: number): void {
     this.currentIndex = index;
+  }
+
+  triggerFileInput(): void {
+    this.fileInput.nativeElement.click();
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files) {
+      for (let i = 0; i < input.files.length; i++) {
+        const file = input.files[i];
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          if (this.isImage({ file })) {
+          this.data.files.push({ file: file, preview: e.target.result, type: 'image' });
+          } else if (this.isVideo({ file })) {
+          this.data.files.push({ file: file, preview: 'video_file', type: 'video' });
+          } else if (file.type === 'application/pdf') {
+          this.data.files.push({ file: file, preview: 'picture_as_pdf', type: 'pdf' });
+          } else {
+          this.data.files.push({ file: file, preview: 'docs', type: 'doc' });
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    }
   }
 
   async sendMessage() {

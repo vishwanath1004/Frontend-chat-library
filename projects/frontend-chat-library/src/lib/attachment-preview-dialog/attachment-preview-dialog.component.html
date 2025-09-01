@@ -1,13 +1,12 @@
 <div class="dialog-container">
-  <div class="dialog-header">
+  <div class="dialog-header ">
     <button mat-icon-button (click)="onClose()" class="close-button">
       <mat-icon>close</mat-icon>
     </button>
   </div>
-
-  <div class="carousel-container">
-    <div class="carousel-content">
-      <div *ngFor="let file of data.files; let i = index" class="carousel-item" [class.active]="i === currentIndex">
+  <div class="carousel-container" (swipeleft)="next()" (swiperight)="previous()">
+    <div class="carousel-content" [style.transform]="'translateX(-' + currentIndex * 100 + 'vw)'">
+      <div *ngFor="let file of data.files; let i = index" class="carousel-item">
         <ng-container [ngSwitch]="true">
           <img *ngSwitchCase="isImage(file)" [src]="file.preview" class="carousel-image">
           <video *ngSwitchCase="isVideo(file)" [src]="file.preview" class="carousel-video" controls></video>
@@ -17,31 +16,43 @@
         </ng-container>
       </div>
     </div>
-    <button mat-icon-button (click)="previous()" class="carousel-control prev" [disabled]="currentIndex === 0">
-      <mat-icon>chevron_left</mat-icon>
-    </button>
-    <button mat-icon-button (click)="next()" class="carousel-control next" [disabled]="currentIndex === data.files.length - 1">
-      <mat-icon>chevron_right</mat-icon>
-    </button>
-  </div>
-
-  <div class="thumbnail-container">
-    <div *ngFor="let file of data.files; let i = index" class="thumbnail-item" [class.active]="i === currentIndex" (click)="setCurrentIndex(i)">
-      <img [src]="file.preview" class="thumbnail-image">
+    <div class="thumbnail-container">
+      <div *ngFor="let file of data.files; let i = index" class="thumbnail-item" [class.active]="i === currentIndex" (click)="setCurrentIndex(i)">
+        <img [src]="file.preview" class="thumbnail-image" *ngIf="file.type == 'image'">
+        <mat-icon *ngIf="file.type != 'image'"  class="thumbnail-image">{{file.preview}}</mat-icon>
+      </div>
     </div>
   </div>
-
   <div class="dialog-footer">
+    <!-- <div class="message-input-container">
+      <textarea [(ngModel)]="messageText" placeholder="Type a message" class="message-input"></textarea>
+      <mat-icon class="material-symbols-outlined add-more-icon" (click)="triggerFileInput()">library_add</mat-icon>
+      <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)" multiple>
+      <button [ngStyle]="{ background: data?.config?.bgColor, color: data?.config?.textColor }" style="padding-bottom: 8px"
+      class="ml-4 bg-blue-500 text-white rounded-full p-3" (click)="sendMessage()" [disabled]="!messageText.trim() && data.files.length === 0">
+      <mat-icon>send</mat-icon>
+    </button>
+    </div> -->
+
     <div class="flex items-center">
       <div class="relative flex-1">
         <textarea [(ngModel)]="messageText" placeholder="Type a message"
           class="w-full border rounded-full px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           style="height: 50px; padding-right: 50px;"></textarea>
+        <button mat-icon-button (click)="triggerFileInput()" class="attachment-button absolute right-2 top-1/2 -translate-y-1/2">
+          <mat-icon style="    margin-top: 13px;
+    background: transparent;">library_add</mat-icon>
+        </button>
+        <input hidden type="file" #fileInput (change)="onFileSelected($event)" multiple>
       </div>
-      <button mat-fab color="primary" (click)="sendMessage()" [disabled]="!messageText.trim() && data.files.length === 0">
+      <button [ngStyle]="{ background:data?.config?.bgColor, color: data?.config?.textColor }" style="padding-bottom: 8px"
+        class="ml-4 bg-blue-500 text-white rounded-full p-3" (click)="sendMessage()" [disabled]="!messageText.trim()">
         <mat-icon>send</mat-icon>
       </button>
     </div>
   </div>
-</div>
 
+
+
+  
+</div>

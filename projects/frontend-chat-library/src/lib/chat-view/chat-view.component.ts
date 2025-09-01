@@ -15,6 +15,7 @@ import { FrontendChatLibraryService } from '../frontend-chat-library.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatDialog } from '@angular/material/dialog';
 import { AttachmentPreviewDialogComponent } from '../attachment-preview-dialog/attachment-preview-dialog.component';
+import { FileSizePipe } from '../pipe/size-cal';
 
 @Component({
   selector: 'lib-chat-view',
@@ -22,6 +23,7 @@ import { AttachmentPreviewDialogComponent } from '../attachment-preview-dialog/a
   styleUrls: ['./chat-view.component.css'],
 })
 export class ChatViewComponent implements OnInit, AfterViewInit {
+  @ViewChild('fileInput') fileInput!: ElementRef;
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
   @Input() config: any;
   @Input() rid: any;
@@ -29,7 +31,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   @Output() profileEvent = new EventEmitter();
   @Output() limitExceededEvent = new EventEmitter();
   @Input() meta: any;
-
+  baseUrl = 'https://chat-dev-temp.elevate-apis.shikshalokam.org';
   textLimit = 250;
   currentUser: any;
   ws: any;
@@ -271,6 +273,16 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
     this.scrollToBottom();
   }
 
+  openGallery() {
+    this.fileInput.nativeElement.accept = 'image/*,video/*';
+    this.fileInput.nativeElement.click();
+  }
+
+  openFiles() {
+    this.fileInput.nativeElement.accept = '*/*';
+    this.fileInput.nativeElement.click();
+  }
+
   onFileSelected(event: any) {
     const files = event.target.files;
     if (files.length === 0) {
@@ -301,8 +313,16 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
 
   openAttachmentPreview(files: any[]): void {
     const dialogRef = this.dialog.open(AttachmentPreviewDialogComponent, {
-      width: '400px',
+      panelClass: 'full-screen-modal',
+      width: '100vw',
+      height: '100vh',
+      maxWidth: '100vw', // Prevents default 80vw limit
+      maxHeight: '100vh',
+      disableClose: true, // Optional: disable outside click
+      hasBackdrop: true,
+      autoFocus: false,
       data: {
+        config: this.config,
         files: files,
         rid: this.rid,
         ws: this.ws,
@@ -344,5 +364,30 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
       const encodedUrl = encodeURI(url);
       return `<a href="${encodedUrl}" target="_blank" rel="noopener noreferrer">${url}</a>`;
     });
+  }
+
+
+
+  isImage(att: any) {
+    return att.image_url || (att.file?.type || '').startsWith('image/');
+  }
+  
+  isVideo(att: any) {
+    return att.video_url || (att.file?.type || '').startsWith('video/');
+  }
+  
+  isDoc(att: any) {
+    return !(att.file?.type || '').includes('image/') && !(att.file?.type || '').includes('video/');
+  }
+
+
+  downloadAttachment(attachment: any): void {
+    const link = document.createElement('a');
+    link.href = this.baseUrl + attachment.title_link + '?rc_uid=' + this.config?.userId + '&rc_token=' + this.config?.xAuthToken;
+    link.download = attachment.title || 'download';
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }

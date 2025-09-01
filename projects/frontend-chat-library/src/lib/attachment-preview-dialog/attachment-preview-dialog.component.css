@@ -1,19 +1,29 @@
 .dialog-container {
   display: flex;
   flex-direction: column;
-  height: 500px; /* Fixed height for the dialog */
-  width: 400px; /* Fixed width for the dialog */
+  height: 100vh;
+  width: 100vw;
   overflow: hidden;
+  background-color: #fff;
+  position: relative;
 }
 
 .dialog-header {
   display: flex;
-  justify-content: flex-end;
-  padding: 8px;
+  justify-content: flex-start;
+  padding: 12px;
+  color: #fff;
+  background-color: #000;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 10;
+  width: 100%;
 }
 
 .close-button {
   background: transparent !important;
+  color: white !important;
 }
 
 .carousel-container {
@@ -63,7 +73,6 @@
   right: 8px;
 }
 
-/* Hide the ripple effect and any hover labels */
 .carousel-control::after {
   display: none !important;
 }
@@ -73,11 +82,14 @@
   justify-content: center;
   padding: 8px;
   background: rgba(0, 0, 0, 0.1);
+  position: absolute;
+  bottom: 0;
+  width: 100%;
 }
 
 .thumbnail-item {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   margin: 0 4px;
   cursor: pointer;
   border: 2px solid transparent;
@@ -85,7 +97,7 @@
 }
 
 .thumbnail-item.active {
-  border-color: #3f51b5; /* Angular Material primary color */
+  border-color: #822215;
 }
 
 .thumbnail-image {
@@ -96,4 +108,72 @@
 
 .dialog-footer {
   padding: 16px;
+  background-color: #fff;
+}
+
+.message-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.message-input {
+  flex-grow: 1;
+  border-radius: 25px;
+  padding: 12px 44px 6px 21px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+
+.add-more-icon {
+  position: absolute;
+  right: 76px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #555;
+  font-size: 30px;
+  width: 30px;
+  height: 30px;
+}
+
+
+.items-center {
+  align-items: center;
+}
+
+.relative {
+  position: relative;
+}
+
+.flex-1 {
+  flex: 1 1 0%;
+}
+
+
+.ml-4 {
+  margin-left: 1rem;
+}
+
+.bg-blue-500 {
+  background-color: #3b82f6;
+}
+
+.text-white {
+  color: #fff;
+}
+
+.p-3 {
+  padding: 0.75rem;
+}
+
+.rounded-full {
+  border-radius: 9999px;
+}
+.attachment-button {
+   
+  right: 15px;
+  top: 9;
+  background: transparent;
 }

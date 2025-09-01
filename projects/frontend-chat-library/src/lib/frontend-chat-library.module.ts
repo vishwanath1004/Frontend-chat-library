@@ -13,13 +13,15 @@ import { FrontendChatLibraryModuleRouting } from './frontend-chat-library-routin
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AttachmentPreviewDialogComponent } from './attachment-preview-dialog/attachment-preview-dialog.component';
+import { FileSizePipe } from './pipe/size-cal';
 
 @NgModule({
   declarations: [
     FrontendChatLibraryComponent,
     MessageListingComponent,
     ChatViewComponent,
-    AttachmentPreviewDialogComponent
+    AttachmentPreviewDialogComponent,
+    FileSizePipe
   ],
   imports: [
     CommonModule,
@@ -36,7 +38,8 @@ import { AttachmentPreviewDialogComponent } from './attachment-preview-dialog/at
     FrontendChatLibraryComponent,
     ChatViewComponent,
     MessageListingComponent,
-    AttachmentPreviewDialogComponent
+    AttachmentPreviewDialogComponent,
+    FileSizePipe
   ],
   schemas: [NO_ERRORS_SCHEMA],
 })
