@@ -87,7 +87,7 @@ export class AttachmentPreviewDialogComponent {
     }
 
     if (this.data.files.length > 0) {
-      const uploadPromises = this.data.files.map((file: any) => this.rocketChatApi.uploadFile(this.data.rid, file.file));
+      const uploadPromises = this.data.files.map((file: any) => this.rocketChatApi.uploadFile(this.data.rid, file.file, this.messageText));
       const uploadResults = await Promise.all(uploadPromises);
 
       const fileLinks = uploadResults.map(result => {
@@ -101,16 +101,6 @@ export class AttachmentPreviewDialogComponent {
         }
         return '';
       }).join('\n');
-      
-      const messageWithFiles = `${this.messageText}\n${fileLinks}`;
-
-      const payload = {
-        msg: 'method',
-        method: 'sendMessage',
-        id: '' + Date.now(),
-        params: [{ rid: this.data.rid, msg: messageWithFiles }],
-      };
-      this.data.ws.send(JSON.stringify(payload));
     } else {
       const payload = {
         msg: 'method',

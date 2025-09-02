@@ -6,13 +6,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { AttachmentPreviewDialogComponent } from './attachment-preview-dialog.component';
 
 @NgModule({
-  declarations: [AttachmentPreviewDialogComponent],
+  declarations: [],
   imports: [
     CommonModule,
     MatDialogModule,
     MatIconModule,
     MatButtonModule
   ],
-  exports: [AttachmentPreviewDialogComponent]
+  exports: []
 })
 export class AttachmentPreviewDialogModule { }

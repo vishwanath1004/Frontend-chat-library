@@ -46,7 +46,7 @@
         <input hidden type="file" #fileInput (change)="onFileSelected($event)" multiple>
       </div>
       <button [ngStyle]="{ background:data?.config?.bgColor, color: data?.config?.textColor }" style="padding-bottom: 8px"
-        class="ml-4 bg-blue-500 text-white rounded-full p-3" (click)="sendMessage()" [disabled]="!messageText.trim()">
+        class="ml-4 bg-blue-500 text-white rounded-full p-3" (click)="sendMessage()">
         <mat-icon>send</mat-icon>
       </button>
     </div>
