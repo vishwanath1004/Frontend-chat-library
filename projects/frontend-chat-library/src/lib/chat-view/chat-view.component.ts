@@ -31,6 +31,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   @Output() backEvent = new EventEmitter();
   @Output() profileEvent = new EventEmitter();
   @Output() limitExceededEvent = new EventEmitter();
+  @Output() fileSupported = new EventEmitter();
   @Input() meta: any;
   baseUrl = 'https://chat-dev-temp.elevate-apis.shikshalokam.org';
   textLimit = 250;
@@ -323,14 +324,20 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
         alert('File size should not exceed 50MB.');
         continue;
       }
+      const isFileSupported = this.chatService.isFileAllowed(file);
       const reader = new FileReader();
-      reader.onload = (e: any) => {
+      if(isFileSupported) {
+        reader.onload = (e: any) => {
         selectedFiles.push({ file, preview: e.target.result });
         if (selectedFiles.length === files.length) {
           this.openAttachmentPreview(selectedFiles);
         }
       };
       reader.readAsDataURL(file);
+      } else {
+        this.chatService.isNotFileSupported.next(true);
+      }
+     
     }
   }
 
@@ -400,7 +407,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   }
   
   isDoc(att: any): boolean {
-    return !att.image_url || !att.video_url;
+    return att.format;
   }
 
 

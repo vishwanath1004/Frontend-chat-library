@@ -46,7 +46,7 @@
         <span class="date-bar"> {{ group.date}} </span>
       </h3>
       <div *ngFor="let message of group.messages" class="mb-4">
-        <div class="chat-card">
+        <div class="chat-card" style="position: relative;">
           <div
             class="d-flex flex-align-end"
             [ngStyle]="{ 'justify-content': message?.author ? 'end' : 'start' }"
@@ -63,11 +63,11 @@
             >
               <ng-container *ngIf="message?.attachments?.length">
                 <ng-container *ngFor="let attachment of message.attachments">
-                  <div style="position: relative;">
+                  <div >
                     <div class="download-icon">
                       <mat-icon 
-                        (click)="downloadAttachment(attachment)" 
-                        style="cursor: pointer; margin-right: 4px;">download</mat-icon>
+                        (click)="downloadAttachment(attachment)"
+                        class="down-arrow">arrow_downward</mat-icon>
                         <span>{{ attachment | fileSize }}</span>
                     </div>
                     <img 
@@ -81,19 +81,16 @@
                       *ngIf="isVideo(attachment)" 
                       style="width: 100%; height: auto; border-radius: 8px;">
                     </video>
-                    <div 
-                      *ngIf="isDoc(attachment)" 
-                      class="doc-preview">
-                      <a
+                    @if(isDoc(attachment)) {
+                    <a
                         [href]="baseUrl + attachment.title_link + '?rc_uid=' + config?.userId + '&rc_token=' + config?.xAuthToken"
                         target="_blank" 
-                        class="link-style">
-                          <mat-icon  class="doc-icon">picture_as_pdf</mat-icon>
-                          <mat-icon *ngIf="attachment?.format && attachment?.format != 'PDF'" class="doc-icon">insert_drive_file</mat-icon>
-                        <div style="color: #822215; text-align: left;">{{ attachment.title }}</div>
+                        class="link-style text-gray-700 ">
+                          <mat-icon class="doc-icon">description</mat-icon>
+                        <div style="text-align: left;">{{ attachment.title }}</div>
                       </a>
+                    }
                     </div>
-                  </div>
                 </ng-container>
                 </ng-container>
                 <div style="text-align: left; color: #000">
