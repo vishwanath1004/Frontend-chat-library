@@ -117,8 +117,12 @@
     <div class="flex items-center">
       <div class="relative flex-1">
         <textarea [(ngModel)]="messageText" placeholder="Type a message"
+          cdkTextareaAutosize
+          #autosize="cdkTextareaAutosize"
+          cdkAutosizeMinRows="2"
+          cdkAutosizeMaxRows="5"
           class="w-full border rounded-full px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          style="height: 50px; padding-right: 50px;"></textarea>
+          style="padding-right: 50px;"></textarea>
         <button mat-icon-button [matMenuTriggerFor]="attachmentMenu" class="attachment-button absolute right-2 top-1/2 -translate-y-1/2 rotate-90">
           <mat-icon>attachment</mat-icon>
         </button>

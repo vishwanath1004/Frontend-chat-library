@@ -333,7 +333,9 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
           this.openAttachmentPreview(selectedFiles);
         }
       };
-      reader.readAsDataURL(file);
+        setTimeout(() => {
+          reader.readAsDataURL(file);
+        }, 0);
       } else {
         this.chatService.isNotFileSupported.next(true);
       }

@@ -75,7 +75,9 @@ export class AttachmentPreviewDialogComponent {
           this.data.files.push({ file: file, preview: 'docs', type: 'doc' });
           }
         };
-        reader.readAsDataURL(file);
+        setTimeout(() => {
+          reader.readAsDataURL(file);
+        }, 0);
         } else {
            this.chatService.isNotFileSupported.next(true);
         }
