@@ -10,16 +10,17 @@
         <ng-container [ngSwitch]="true">
           <img *ngSwitchCase="isImage(file)" [src]="file.preview" class="carousel-image">
           <video *ngSwitchCase="isVideo(file)" [src]="file.preview" class="carousel-video" controls></video>
-          <div *ngSwitchDefault class="w-full h-full bg-gray-200 flex items-center justify-center rounded">
-            <mat-icon class="text-6xl">insert_drive_file</mat-icon>
+          <div *ngSwitchDefault class="w-full h-full bg-gray-200 flex flex-col items-center justify-center rounded">
+            <mat-icon class="text-6xl" style="font-size: 120px;height: 120px;width: 120px;">description</mat-icon>
+            <p class="text-lg mt-2">{{ file.file.name }}</p>
           </div>
         </ng-container>
       </div>
     </div>
     <div class="thumbnail-container">
       <div *ngFor="let file of data.files; let i = index" class="thumbnail-item" [class.active]="i === currentIndex" (click)="setCurrentIndex(i)">
-        <img [src]="file.preview" class="thumbnail-image" *ngIf="file.type == 'image'">
-        <mat-icon *ngIf="file.type != 'image'"  class="thumbnail-image">{{file.preview}}</mat-icon>
+        <img [src]="file.preview" class="thumbnail-image" *ngIf="isImage(file)">
+        <mat-icon *ngIf="!isImage(file)"  class="thumbnail-image" style="font-size: 55px;">description</mat-icon>
       </div>
     </div>
   </div>
@@ -39,14 +40,27 @@
         <textarea [(ngModel)]="messageText" placeholder="Type a message"
           class="w-full border rounded-full px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           style="height: 50px; padding-right: 50px;"></textarea>
-        <button mat-icon-button (click)="triggerFileInput()" class="attachment-button absolute right-2 top-1/2 -translate-y-1/2">
+        <button mat-icon-button [matMenuTriggerFor]="attachmentMenu"  class="attachment-button absolute right-2 top-1/2 -translate-y-1/2">
           <mat-icon style="    margin-top: 13px;
     background: transparent;">library_add</mat-icon>
         </button>
+          <mat-menu #attachmentMenu="matMenu" class="bg-white text-gray-800 rounded-md shadow-lg">
+          <div class="flex p-3">
+            <button mat-menu-item (click)="openFiles()" class="d-flex flex-col">
+              <mat-icon>folder</mat-icon>
+              <div>Files</div>
+            </button>
+            <button mat-menu-item (click)="openGallery()" class="d-flex flex-col ">
+              <mat-icon>photo_library</mat-icon>
+              <div>Gallery</div>
+            </button>
+         
+          </div>
+        </mat-menu>
         <input hidden type="file" #fileInput (change)="onFileSelected($event)" multiple>
       </div>
       <button [ngStyle]="{ background:data?.config?.bgColor, color: data?.config?.textColor }" style="padding-bottom: 8px"
-        class="ml-4 bg-blue-500 text-white rounded-full p-3" (click)="sendMessage()" [disabled]="!messageText.trim()">
+        class="ml-4 bg-blue-500 text-white rounded-full p-3" (click)="sendMessage()">
         <mat-icon>send</mat-icon>
       </button>
     </div>

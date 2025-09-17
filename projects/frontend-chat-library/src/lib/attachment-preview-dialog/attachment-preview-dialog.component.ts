@@ -1,6 +1,7 @@
 import { Component, Inject, ViewChild, ElementRef } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { RocketChatApiService } from '../services/rocket-chat-api/rocket-chat-api.service';
+import { FrontendChatLibraryService } from '../frontend-chat-library.service';
 
 @Component({
   selector: 'lib-attachment-preview-dialog',
@@ -15,7 +16,8 @@ export class AttachmentPreviewDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<AttachmentPreviewDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private rocketChatApi: RocketChatApiService
+    private rocketChatApi: RocketChatApiService,
+    private chatService: FrontendChatLibraryService
   ) {}
 
   isImage(file: any): boolean {
@@ -53,9 +55,6 @@ export class AttachmentPreviewDialogComponent {
     this.currentIndex = index;
   }
 
-  triggerFileInput(): void {
-    this.fileInput.nativeElement.click();
-  }
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -63,7 +62,9 @@ export class AttachmentPreviewDialogComponent {
       for (let i = 0; i < input.files.length; i++) {
         const file = input.files[i];
         const reader = new FileReader();
-        reader.onload = (e: any) => {
+        const isFileSupported = this.chatService.isFileAllowed(file);
+        if(isFileSupported) {
+          reader.onload = (e: any) => {
           if (this.isImage({ file })) {
           this.data.files.push({ file: file, preview: e.target.result, type: 'image' });
           } else if (this.isVideo({ file })) {
@@ -74,9 +75,25 @@ export class AttachmentPreviewDialogComponent {
           this.data.files.push({ file: file, preview: 'docs', type: 'doc' });
           }
         };
-        reader.readAsDataURL(file);
+        setTimeout(() => {
+          reader.readAsDataURL(file);
+        }, 0);
+        } else {
+           this.chatService.isNotFileSupported.next(true);
+        }
+       
       }
     }
+  }
+
+  openGallery() {
+    this.fileInput.nativeElement.accept = 'image/*,video/*';
+    this.fileInput.nativeElement.click();
+  }
+
+  openFiles() {
+    this.fileInput.nativeElement.accept = '*/*';
+    this.fileInput.nativeElement.click();
   }
 
   async sendMessage() {
@@ -87,7 +104,7 @@ export class AttachmentPreviewDialogComponent {
     }
 
     if (this.data.files.length > 0) {
-      const uploadPromises = this.data.files.map((file: any) => this.rocketChatApi.uploadFile(this.data.rid, file.file));
+      const uploadPromises = this.data.files.map((file: any) => this.rocketChatApi.uploadFile(this.data.rid, file.file, this.messageText));
       const uploadResults = await Promise.all(uploadPromises);
 
       const fileLinks = uploadResults.map(result => {
@@ -101,16 +118,6 @@ export class AttachmentPreviewDialogComponent {
         }
         return '';
       }).join('\n');
-      
-      const messageWithFiles = `${this.messageText}\n${fileLinks}`;
-
-      const payload = {
-        msg: 'method',
-        method: 'sendMessage',
-        id: '' + Date.now(),
-        params: [{ rid: this.data.rid, msg: messageWithFiles }],
-      };
-      this.data.ws.send(JSON.stringify(payload));
     } else {
       const payload = {
         msg: 'method',

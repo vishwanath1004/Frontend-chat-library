@@ -43,10 +43,10 @@
       class="message-group"
     >
       <h3 class="text-center text-gray-600 text-sm mb-4">
-        <span class="date-bar"> {{ group.date }} </span>
+        <span class="date-bar"> {{ group.date}} </span>
       </h3>
       <div *ngFor="let message of group.messages" class="mb-4">
-        <div class="chat-card">
+        <div class="chat-card" style="position: relative;">
           <div
             class="d-flex flex-align-end"
             [ngStyle]="{ 'justify-content': message?.author ? 'end' : 'start' }"
@@ -63,11 +63,11 @@
             >
               <ng-container *ngIf="message?.attachments?.length">
                 <ng-container *ngFor="let attachment of message.attachments">
-                  <div style="position: relative;">
+                  <div >
                     <div class="download-icon">
                       <mat-icon 
-                        (click)="downloadAttachment(attachment)" 
-                        style="cursor: pointer; margin-right: 4px;">download</mat-icon>
+                        (click)="downloadAttachment(attachment)"
+                        class="down-arrow">arrow_downward</mat-icon>
                         <span>{{ attachment | fileSize }}</span>
                     </div>
                     <img 
@@ -81,23 +81,22 @@
                       *ngIf="isVideo(attachment)" 
                       style="width: 100%; height: auto; border-radius: 8px;">
                     </video>
-                   ---- json {{attachment | json}} 
-                    <div 
-                      *ngIf="!isDoc(attachment) && !isImage(attachment)" 
-                      class="doc-preview">
-                      <a
+                    @if(isDoc(attachment)) {
+                    <a
                         [href]="baseUrl + attachment.title_link + '?rc_uid=' + config?.userId + '&rc_token=' + config?.xAuthToken"
                         target="_blank" 
-                        class="link-style">
-                        <mat-icon *ngIf="attachment?.format && attachment?.format == 'PDF'" class="doc-icon"> picture_as_pdf </mat-icon>
-                        <mat-icon *ngIf="attachment?.format && attachment?.format != 'PDF'" class="doc-icon"> docs </mat-icon>
-                        <div style="color: #822215; text-align: left;">{{ attachment.title }} --- {{attachment?.format}} opopop {{attachment | json}}</div>
+                        class="link-style text-gray-700 ">
+                          <mat-icon class="doc-icon">description</mat-icon>
+                        <div style="text-align: left;">{{ attachment.title }}</div>
                       </a>
+                    }
                     </div>
-                  </div>
                 </ng-container>
                 </ng-container>
-              <span style="text-align: left; color: #000" [innerHTML]="message?.content?.changingThisBreaksApplicationSecurity"></span>
+                <div style="text-align: left; color: #000">
+                <div [innerHTML]="message?.content?.changingThisBreaksApplicationSecurity"></div>
+                <div>{{message?.attachments[0]?.description}}</div>
+              </div>
               <span style="display: block; font-size: 12px; color: gray; text-align: right;">
                 {{ message.time }}
               </span>
@@ -118,18 +117,22 @@
     <div class="flex items-center">
       <div class="relative flex-1">
         <textarea [(ngModel)]="messageText" placeholder="Type a message"
+          cdkTextareaAutosize
+          #autosize="cdkTextareaAutosize"
+          cdkAutosizeMinRows="2"
+          cdkAutosizeMaxRows="5"
           class="w-full border rounded-full px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          style="height: 50px; padding-right: 50px;"></textarea>
-        <button mat-icon-button [matMenuTriggerFor]="attachmentMenu" class="attachment-button absolute right-2 top-1/2 -translate-y-1/2">
+          style="padding-right: 50px;"></textarea>
+        <button mat-icon-button [matMenuTriggerFor]="attachmentMenu" class="attachment-button absolute right-2 top-1/2 -translate-y-1/2 rotate-90">
           <mat-icon>attachment</mat-icon>
         </button>
         <mat-menu #attachmentMenu="matMenu" class="bg-white text-gray-800 rounded-md shadow-lg">
-          <div class="flex">
-            <button mat-menu-item (click)="openFiles()">
+          <div class="flex p-3">
+            <button mat-menu-item (click)="openFiles()" class="d-flex flex-col">
               <mat-icon>folder</mat-icon>
               <div>Files</div>
             </button>
-            <button mat-menu-item (click)="openGallery()">
+            <button mat-menu-item (click)="openGallery()" class="d-flex flex-col ">
               <mat-icon>photo_library</mat-icon>
               <div>Gallery</div>
             </button>

@@ -12,7 +12,7 @@ import { ChatViewComponent } from './chat-view.component';
 import { AttachmentPreviewDialogComponent } from '../attachment-preview-dialog/attachment-preview-dialog.component';
 
 @NgModule({
-  declarations: [ChatViewComponent, AttachmentPreviewDialogComponent],
+  declarations: [],
   imports: [
     CommonModule,
     FormsModule,
@@ -22,8 +22,8 @@ import { AttachmentPreviewDialogComponent } from '../attachment-preview-dialog/a
     MatMenuModule,
     MatDialogModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
   ],
-  exports: [ChatViewComponent],
+  exports: [],
 })
 export class ChatViewModule {}

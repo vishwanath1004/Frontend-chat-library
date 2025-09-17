@@ -12,6 +12,7 @@ export class RocketChatApiService {
   headers: any;
   private ws: WebSocket | null = null;
   private messagesList: any[] = [];
+  public isWebSocketInitialized = false;
   constructor(
     private http: HttpClient,
     private chatService: FrontendChatLibraryService
@@ -201,8 +202,7 @@ export class RocketChatApiService {
   async initializeWebSocketAndCheckUnread() {
     const config = this.chatService.config;
     this.ws = new WebSocket(config.chatWebSocketUrl);
-
-    this.ws.onmessage = async (event: any) => {
+      this.ws.onmessage = async (event: any) => {
       const data = JSON.parse(event.data);
       
       if (data.msg === 'ping') {
@@ -213,7 +213,7 @@ export class RocketChatApiService {
         await this.subscribeToChannels(config, this.ws!);
       }
       
-      if (data.msg === 'changed' && data.fields) {
+      if (data.msg === 'changed' && data.fields && !this.isWebSocketInitialized) {
         await this.handleMessageChangeEvent(data.fields, currentUser);
       }
     };
@@ -262,7 +262,6 @@ private async loadInitialMessages(ws: WebSocket, config: any, currentUser: any) 
 
 private async handleMessageChangeEvent(fields: any, currentUser:any) {
   const { eventName, args } = fields;
- 
   if (eventName.includes('rooms-changed') && args[0] === 'updated') {
     const incomingMsgData = args[1];
     if (incomingMsgData.lastMessage) {
@@ -347,10 +346,13 @@ private async handleMessageChangeEvent(fields: any, currentUser:any) {
     }
   }
 
-  async uploadFile(rid: string, file: File): Promise<any> {
+  async uploadFile(rid: string, file: File, message?: string): Promise<any> {
     const url = `${this.baseUrl}/api/v1/rooms.upload/${rid}`;
     const formData = new FormData();
     formData.append('file', file, file.name);
+    if (message && message.trim()) {
+      formData.append('description', message.trim());
+    }
 
     const httpOptions = {
       headers: new HttpHeaders({
