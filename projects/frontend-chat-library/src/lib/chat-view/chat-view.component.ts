@@ -17,6 +17,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AttachmentPreviewDialogComponent } from '../attachment-preview-dialog/attachment-preview-dialog.component';
 import { FileSizePipe } from '../pipe/size-cal';
 
+
 @Component({
   selector: 'lib-chat-view',
   templateUrl: './chat-view.component.html',
@@ -30,6 +31,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   @Output() backEvent = new EventEmitter();
   @Output() profileEvent = new EventEmitter();
   @Output() limitExceededEvent = new EventEmitter();
+  @Output() fileSupported = new EventEmitter();
   @Input() meta: any;
   baseUrl = 'https://chat-dev-temp.elevate-apis.shikshalokam.org';
   textLimit = 250;
@@ -71,9 +73,11 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   async ngOnInit() {
     this.config = this.config || this.chatService.config;
     if (!this.rid) return;
-
     await this.initializeWebSocket();
+    if(!this.rocketChatApi.isWebSocketInitialized)
+    this.rocketChatApi.isWebSocketInitialized = true;
     await this.loadChatHistory();
+    await this.markRoomAsRead();
 
     this.isLoading = false;
     this.scrollToBottom();
@@ -139,9 +143,14 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
           } else {
             this.messages.push({ date, messages: [formattedMessage] });
           }
-    
           this.cdk.detectChanges();
           this.scrollToBottom();
+          if(this.rocketChatApi.isWebSocketInitialized) {
+           await this.markRoomAsRead();
+          }
+        
+        } else if (newMessage && newMessage.rid !== this.rid) {
+          this.rocketChatApi.isWebSocketInitialized = false;
         }
       }
     };
@@ -151,6 +160,21 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
     this.ws.onclose = () => {
       setTimeout(() => this.initializeWebSocket(), 5000);
     };
+  }
+
+  async markRoomAsRead(): Promise<void> {
+    try {
+      const payload = {
+        msg: 'method',
+        method: 'readMessages',
+        id: Date.now().toString(),
+        params: [this.rid]
+      };if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify(payload));
+      }
+    } catch (error) {
+      console.error('Failed to mark room as read:', error);
+    }
   }
 
   async loadChatHistory(): Promise<void> {
@@ -254,10 +278,6 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   }
 
   async sendMessage() {
-    if (this.selectedFiles.length > 0) {
-      this.openAttachmentPreview(this.selectedFiles);
-      return;
-    }
     if (!this.messageText.trim()) return;
     if (this.messageText.length > this.textLimit) {
       this.limitExceededEvent.emit(this.textLimit);
@@ -298,20 +318,28 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    this.selectedFiles = [];
+    const selectedFiles: any[] = [];
     for (const file of files) {
       if (file.size > 50 * 1024 * 1024) {
         alert('File size should not exceed 50MB.');
         continue;
       }
+      const isFileSupported = this.chatService.isFileAllowed(file);
       const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.selectedFiles.push({ file, preview: e.target.result });
-        if (this.selectedFiles.length === files.length) {
-          this.openAttachmentPreview(this.selectedFiles);
+      if(isFileSupported) {
+        reader.onload = (e: any) => {
+        selectedFiles.push({ file, preview: e.target.result });
+        if (selectedFiles.length === files.length) {
+          this.openAttachmentPreview(selectedFiles);
         }
       };
-      reader.readAsDataURL(file);
+        setTimeout(() => {
+          reader.readAsDataURL(file);
+        }, 0);
+      } else {
+        this.chatService.isNotFileSupported.next(true);
+      }
+     
     }
   }
 
@@ -330,15 +358,12 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
         files: files,
         rid: this.rid,
         ws: this.ws,
-        textLimit: this.textLimit,
-        messageText: this.messageText
+        textLimit: this.textLimit
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.messageText = '';
-        this.selectedFiles = [];
         this.scrollToBottom();
       }
     });
@@ -383,8 +408,8 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
     return att.video_url || (att.file?.type || '').startsWith('video/');
   }
   
-  isDoc(att: any) {
-    return !(att.file?.type || '').includes('image/') && !(att.file?.type || '').includes('video/');
+  isDoc(att: any): boolean {
+    return att.format;
   }
 
 

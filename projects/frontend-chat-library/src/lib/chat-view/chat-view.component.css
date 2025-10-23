@@ -12,12 +12,17 @@
 .chat-card-content{
     background-color: #f1f1f1;
     border-radius: 15px;
-    padding: 10px;
+    padding: 5px;
     width: 80%;
 }
 .d-flex{
     display: flex;
 }
+
+.flex-col {
+    flex-direction: column;
+}
+
 .flex-align-end{
     align-items: end;
 }
@@ -160,6 +165,18 @@
     color: #fff;
 }
 
+.text-gray-700 {
+    color:#50504e
+}
+
+.down-arrow {
+    background-color: #50504e;
+    border-radius: 15px;
+    color: white;
+    cursor: pointer;
+    margin-right: 4px;
+}
+
 .p-3 {
     padding: 0.75rem;
 }
@@ -230,6 +247,10 @@
     transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 
+.rotate-90 {
+    transform: rotate(-90deg);
+}
+
 .w-full {
     width: 100%;
 }
@@ -252,7 +273,7 @@
     fill: currentColor;
     height: 60px;
     width: 60px;
-    font-size: 60px;
+    font-size: 50px;
 }
 
 .link-style{
@@ -267,8 +288,8 @@
 }
 .download-icon{
     position: absolute; 
-    top: 8px; 
-    right: 8px; 
+    top: 1px; 
+    right: 3px; 
     display: flex; 
     align-items: center; 
     background: #fff; 
