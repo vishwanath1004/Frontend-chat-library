@@ -254,6 +254,10 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   }
 
   async sendMessage() {
+    if (this.selectedFiles.length > 0) {
+      this.openAttachmentPreview(this.selectedFiles);
+      return;
+    }
     if (!this.messageText.trim()) return;
     if (this.messageText.length > this.textLimit) {
       this.limitExceededEvent.emit(this.textLimit);
@@ -294,7 +298,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
       return;
     }
 
-    const selectedFiles: any[] = [];
+    this.selectedFiles = [];
     for (const file of files) {
       if (file.size > 50 * 1024 * 1024) {
         alert('File size should not exceed 50MB.');
@@ -302,9 +306,9 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
       }
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        selectedFiles.push({ file, preview: e.target.result });
-        if (selectedFiles.length === files.length) {
-          this.openAttachmentPreview(selectedFiles);
+        this.selectedFiles.push({ file, preview: e.target.result });
+        if (this.selectedFiles.length === files.length) {
+          this.openAttachmentPreview(this.selectedFiles);
         }
       };
       reader.readAsDataURL(file);
@@ -326,12 +330,15 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
         files: files,
         rid: this.rid,
         ws: this.ws,
-        textLimit: this.textLimit
+        textLimit: this.textLimit,
+        messageText: this.messageText
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        this.messageText = '';
+        this.selectedFiles = [];
         this.scrollToBottom();
       }
     });

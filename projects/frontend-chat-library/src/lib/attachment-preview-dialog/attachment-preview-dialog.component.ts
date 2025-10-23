@@ -16,7 +16,9 @@ export class AttachmentPreviewDialogComponent {
     public dialogRef: MatDialogRef<AttachmentPreviewDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private rocketChatApi: RocketChatApiService
-  ) {}
+  ) {
+    this.messageText = data.messageText || '';
+  }
 
   isImage(file: any): boolean {
     return file.file.type.startsWith('image/');
