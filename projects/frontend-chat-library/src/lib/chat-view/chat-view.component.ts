@@ -44,6 +44,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
   private startDate!: Date;
   private endDate!: Date;
   canSendMessage: boolean = true;
+  isConnection : boolean = true;
   CHAT_LIB_META_KEYS: any;
 
   constructor(
@@ -77,7 +78,6 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
 
   async initializeWebSocket() {
     this.isLoading = true;
-
     this.ws = new WebSocket(this.config.chatWebSocketUrl);
     await this.rocketChatApi.setHeadersAndWebsocket(this.config, this.ws);
     this.currentUser = await this.rocketChatApi.getCurrentUserDetails();
@@ -93,7 +93,8 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
     );
     this.friendDetails = await this.rocketChatApi.getUserInfoByUsername(friendName);
     this.friendDetails.profilePic = await this.rocketChatApi.resolveImageUrl(this.friendDetails.user.username);
-    this.canSendMessage = this.friendDetails?.user?.active;
+    await this.checkStatus();
+    this.canSendMessage = this.friendDetails?.user?.active && this.isConnection;
     this.isLoading = false;
     this.ws.onmessage = async (event: MessageEvent) => {
       const data = JSON.parse(event.data);
@@ -158,6 +159,11 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
     } catch (error) {
       console.error('Failed to mark room as read:', error);
     }
+  }
+
+  async checkStatus() :  Promise<void> {
+    const response = await this.rocketChatApi.getStatus(this.friendDetails.user._id);
+    this.isConnection =  response.data?.connection;
   }
 
   async loadChatHistory(): Promise<void> {
