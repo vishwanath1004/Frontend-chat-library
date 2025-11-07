@@ -163,7 +163,7 @@ export class ChatViewComponent implements OnInit, AfterViewInit {
 
   async checkStatus() :  Promise<void> {
     const response = await this.rocketChatApi.getStatus(this.friendDetails.user._id);
-    this.isConnection =  response.data?.connection;
+    this.isConnection =  response.result?.data?.connection;
   }
 
   async loadChatHistory(): Promise<void> {
