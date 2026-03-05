@@ -10,7 +10,7 @@ import { FrontendChatLibraryService } from '../frontend-chat-library.service';
 })
 export class AttachmentPreviewDialogComponent {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
-  messageText: string = '';
+  messageText: string[] = [];
   currentIndex = 0;
 
   constructor(
@@ -97,14 +97,20 @@ export class AttachmentPreviewDialogComponent {
   }
 
   async sendMessage() {
-    if (!this.messageText.trim() && this.data.files.length === 0) return;
-    if (this.messageText.length > this.data.textLimit) {
+    if (this.data.files.length === 0) return;
+    const limit = this.data.textLimit;
+
+    const index = this.messageText.findIndex(
+      text => (text || '').length > limit
+    );
+
+    if (index !== -1) {
       alert(`Message length should not exceed ${this.data.textLimit} characters.`);
       return;
     }
 
     if (this.data.files.length > 0) {
-      const uploadPromises = this.data.files.map((file: any) => this.rocketChatApi.uploadFile(this.data.rid, file.file, this.messageText));
+      const uploadPromises = this.data.files.map((file: any, i: number) => this.rocketChatApi.uploadFile(this.data.rid, file.file, this.messageText[i]));
       const uploadResults = await Promise.all(uploadPromises);
 
       const fileLinks = uploadResults.map(result => {
