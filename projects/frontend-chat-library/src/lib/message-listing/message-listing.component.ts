@@ -14,6 +14,7 @@ export class MessageListingComponent implements OnInit {
   @Output() onSelect = new EventEmitter();
   @Output() newMessageEvent = new EventEmitter<any>();
   @Output() toastMessageEvent = new EventEmitter<any>();
+  @Input() translatedMessages: any;
   messagesList: any;
   currentUser: any;
   ws: any;
