@@ -1,6 +1,6 @@
 {
   "name": "sl-chat-library",
-  "version": "1.2.16",
+  "version": "1.2.17",
   "peerDependencies": {
     "@angular/common": "^13.3.0",
     "@angular/core": "^13.3.0",
