@@ -147,7 +147,7 @@
       </button>
     </div>
   </div>
-  } @else {
+  } @else if(!friendDetails?.user?.active){
     <div class="flex justify-center p-3 border-t items-center psfixed">
         <div>
           <mat-icon>info</mat-icon>
@@ -156,6 +156,19 @@
           </span>
           <p style="color: grey; font-size: 14px; margin-top: 5px; margin-left: 30px;">
             {{meta.CANT_SEND_MESSAGE_TO_MENTOR}}
+          </p>
+        </div>
+      </div>
+  }
+  @else if(friendDetails?.user?.active && !isConnection){
+    <div class="flex justify-center p-3 border-t items-center psfixed">
+        <div>
+          <mat-icon>info</mat-icon>
+          <span style="vertical-align: super; font-size: 16px;">
+            {{meta.CONNECTION_DELETE}}
+          </span>
+          <p style="color: grey; font-size: 14px; margin-top: 5px; margin-left: 30px;">
+            {{meta.YOU_CANT_REACH_USER}}
           </p>
         </div>
       </div>

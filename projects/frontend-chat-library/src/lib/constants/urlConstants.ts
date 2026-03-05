@@ -8,6 +8,7 @@ export const urlConstants = {
     SEND_MESSAGE: '/api/v1/method.call/sendMessage',
     ROOM_INFO: '/api/v1/rooms.info',
     MARK_AS_READ: '/api/v1/subscriptions.read',
-    MESSAGE_LIMIT:"/api/v1/method.call/public-settings"
+    MESSAGE_LIMIT:"/api/v1/method.call/public-settings",
+    GET_STATUS:"/mentoring/v1/connections/checkConnection",
   },
 };

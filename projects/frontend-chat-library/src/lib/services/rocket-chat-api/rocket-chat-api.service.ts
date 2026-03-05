@@ -10,6 +10,8 @@ import { FrontendChatLibraryService } from '../../frontend-chat-library.service'
 export class RocketChatApiService {
   baseUrl: any;
   headers: any;
+  appBaseUrl : any;
+  appHeaders: any;
   private ws: WebSocket | null = null;
   private messagesList: any[] = [];
   public isWebSocketInitialized = false;
@@ -20,10 +22,11 @@ export class RocketChatApiService {
 
   async setHeadersAndWebsocket(config: any, ws: any) {
     this.baseUrl = config.chatBaseUrl;
+    this.appBaseUrl = config.appBaseUrl;
+    this.appHeaders = config.headers;
     this.headers = {
       'X-Auth-Token': config.xAuthToken,
       'X-User-Id': config.userId,
-      // You can add more headers if needed
     };
     ws.onopen = (event: any) => {
       const connectionMessage = {
@@ -343,6 +346,17 @@ private async handleMessageChangeEvent(fields: any, currentUser:any) {
       return imageUrl;
     } catch (error) {
       return defaultImage;
+    }
+  }
+
+  async getStatus(username:any): Promise<any> {
+    try {
+      const response: any = await lastValueFrom(
+        this.http.post(`${this.appBaseUrl}${urlConstants.API_URLS.GET_STATUS}`, { "friend_id":username}, { headers: this.appHeaders } )
+      );
+      return response;
+    } catch (error) {
+      return null;
     }
   }
 
